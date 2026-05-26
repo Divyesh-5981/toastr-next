@@ -1,265 +1,378 @@
-# toastr
-**toastr** is a Javascript library for non-blocking notifications. jQuery is required. The goal is to create a simple core library that can be customized and extended.
+# toastr-next
 
-[![Build Status](https://travis-ci.org/CodeSeven/toastr.svg)](https://travis-ci.org/CodeSeven/toastr)
-Browser testing provided by BrowserStack.
+[![npm version](https://img.shields.io/npm/v/toastr-next.svg)](https://www.npmjs.com/package/toastr-next)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-33%20passing-brightgreen.svg)](#)
+[![Bundle Size](https://img.shields.io/badge/deps-zero-blue.svg)](#)
 
-## Current Version
-2.1.4
+A TypeScript rewrite of [toastr 2.x](https://github.com/CodeSeven/toastr) — zero dependencies, fully typed, promise-based API, dark mode, and CSS animation presets.
 
-## Demo
-- Demo can be found at http://codeseven.github.io/toastr/demo.html
-- [Demo using FontAwesome icons with toastr](http://plnkr.co/edit/6W9URNyyp2ItO4aUWzBB?p=preview)
+---
 
-## CDNs
-[![cdnjs](https://img.shields.io/cdnjs/v/toastr.js.svg)](https://cdnjs.com/libraries/toastr.js)
-[![jsdelivr](https://data.jsdelivr.com/v1/package/npm/toastr/badge)](https://www.jsdelivr.com/package/npm/toastr)
+## Why toastr-next?
 
-Toastr is hosted at cdnjs and jsdelivr
+| Feature | toastr 2.x | toastr-next 3.x |
+|---|---|---|
+| Dependencies | jQuery required | **Zero** |
+| TypeScript | No | **First-class** |
+| Animations | jQuery animate + easing | **CSS `@keyframes`** |
+| Dark mode | Manual CSS | **`prefers-color-scheme` + `data-theme`** |
+| Accessibility | Partial | **Full (ARIA, keyboard)** |
+| Return value | jQuery object | **`Promise<ToastInstance>`** |
+| React | Third-party | **Built-in hook + provider** |
+| Bundle formats | UMD only | **ESM, CJS, UMD, IIFE** |
 
-#### Debug
-- [//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css](//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css)
-
-#### Minified
-- [//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js](//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js)
-- [//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css](//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css)
+---
 
 ## Install
 
-#### [NuGet Gallery](http://nuget.org/packages/toastr)
-```
-Install-Package toastr
-```
-
-#### [Bower](http://bower.io/search/?q=toastr)
-```
-bower install toastr
+```bash
+npm install toastr-next
 ```
 
-#### [npm](https://www.npmjs.com/package/toastr)
-```
-npm install --save toastr
-```
-
-#### [yarn](https://yarnpkg.com/en/package/toastr)
-```
-yarn add toastr
+```bash
+yarn add toastr-next
 ```
 
-#### [Ruby on Rails](https://github.com/tylergannon/toastr-rails)
-```ruby
-# Gemfile
-
-gem 'toastr-rails'
+```bash
+pnpm add toastr-next
 ```
 
-```coffee
-# application.coffee
-
-#= require toastr
-```
-
-```scss
-// application.scss
-
-@import "toastr";
-```
-
-
-
-
-## Wiki and Change Log
-[Wiki including Change Log](https://github.com/CodeSeven/toastr/wiki)
-
-## Breaking Changes
-
-#### Animation Changes
-The following animations options have been deprecated and should be replaced:
-
- - Replace `options.fadeIn` with `options.showDuration`
- - Replace `options.onFadeIn` with `options.onShown`
- - Replace `options.fadeOut` with `options.hideDuration`
- - Replace `options.onFadeOut` with `options.onHidden`
+---
 
 ## Quick Start
 
-### 3 Easy Steps
-For other API calls, see the [demo](http://codeseven.github.io/toastr/demo.html).
+### Vanilla / TypeScript
 
-1. Link to toastr.css `<link href="toastr.css" rel="stylesheet"/>`
+```typescript
+import { toastr } from 'toastr-next';
+import 'toastr-next/style';
 
-2. Link to toastr.js `<script src="toastr.js"></script>`
+// Fire and forget
+toastr.success('Saved!');
+toastr.error('Something went wrong', 'Error');
+toastr.warning('Low disk space', 'Warning');
+toastr.info('Update available');
 
-3. use toastr to display a toast for info, success, warning or error
-	```js
-	// Display an info toast with no title
-	toastr.info('Are you the 6 fingered man?')
-	```
-
-### Other Options
-```js
-// Display a warning toast, with no title
-toastr.warning('My name is Inigo Montoya. You killed my father, prepare to die!')
-
-// Display a success toast, with a title
-toastr.success('Have fun storming the castle!', 'Miracle Max Says')
-
-// Display an error toast, with a title
-toastr.error('I do not think that word means what you think it means.', 'Inconceivable!')
-
-// Immediately remove current toasts without using animation
-toastr.remove()
-
-// Remove current toasts using animation
-toastr.clear()
-
-// Override global options
-toastr.success('We do have the Kapua suite available.', 'Turtle Bay Resort', {timeOut: 5000})
+// Await the instance, then wait until it is dismissed
+const instance = await toastr.info('Loading…');
+await instance.dismissed;
+console.log('toast closed');
 ```
 
-### Escape HTML characters
-In case you want to escape HTML characters in title and message
+### React
 
-	toastr.options.escapeHtml = true;
+```tsx
+import { ToastrProvider, useToastr } from 'toastr-next/react';
 
-### Close Button
-Optionally enable a close button
-```js
-toastr.options.closeButton = true;
-````
+// 1. Wrap your app once
+function App() {
+  return (
+    <ToastrProvider options={{ positionClass: 'toast-top-right' }}>
+      <YourApp />
+    </ToastrProvider>
+  );
+}
 
-Optionally override the close button's HTML.
+// 2. Use the hook anywhere inside the tree
+function SaveButton() {
+  const { success, error } = useToastr({ positionClass: 'toast-bottom-right' });
 
-```js
-toastr.options.closeHtml = '<button><i class="icon-off"></i></button>';
+  async function handleSave() {
+    try {
+      await save();
+      success('Saved!');
+    } catch (e) {
+      error('Save failed', 'Error');
+    }
+  }
+
+  return <button onClick={handleSave}>Save</button>;
+}
 ```
 
-You can also override the CSS/LESS for `#toast-container .toast-close-button`
+---
 
-Optionally override the hide animation when the close button is clicked (falls back to hide configuration).
-```js
-toastr.options.closeMethod = 'fadeOut';
-toastr.options.closeDuration = 300;
-toastr.options.closeEasing = 'swing';
+## Options
+
+All options can be set globally on `toastr.options` or passed per-call as the third argument.
+
+```typescript
+toastr.options.timeOut = 3000;
+toastr.success('Hello', 'Title', { closeButton: true, animation: 'slide' });
 ```
 
-### Display Sequence
-Show newest toast at bottom (top is default)
-```js
-toastr.options.newestOnTop = false;
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `animation` | `'fade' \| 'slide' \| 'bounce' \| 'flip'` | `'fade'` | CSS `@keyframes` animation preset |
+| `closeButton` | `boolean` | `false` | Show a close button |
+| `closeHtml` | `string` | `'<button>…</button>'` | Custom close button HTML |
+| `debug` | `boolean` | `false` | Log debug info to the console |
+| `escapeHtml` | `boolean` | `false` | Escape HTML in title and message |
+| `extendedTimeOut` | `number` | `1000` | Ms to keep toast open after hover |
+| `hideDuration` | `number` | `1000` | Ms for the hide animation |
+| `messageClass` | `string` | `'toast-message'` | CSS class for the message element |
+| `newestOnTop` | `boolean` | `true` | Stack newest toasts on top |
+| `onCloseClick` | `() => void` | — | Callback when close button clicked |
+| `onHidden` | `() => void` | — | Callback after toast is hidden |
+| `onShown` | `() => void` | — | Callback after toast is shown |
+| `onclick` | `() => void` | — | Callback when toast body is clicked |
+| `positionClass` | `string` | `'toast-top-right'` | Container position class |
+| `preventDuplicates` | `boolean` | `false` | Suppress duplicate messages |
+| `progressBar` | `boolean` | `false` | Show a progress bar |
+| `rtl` | `boolean` | `false` | Right-to-left layout |
+| `showDuration` | `number` | `300` | Ms for the show animation |
+| `tapToDismiss` | `boolean` | `true` | Click toast body to dismiss |
+| `target` | `string` | `'body'` | CSS selector for the container parent |
+| `timeOut` | `number` | `5000` | Ms before auto-dismiss (0 = sticky) |
+| `titleClass` | `string` | `'toast-title'` | CSS class for the title element |
+| `toastClass` | `string` | `'toast'` | CSS class for each toast element |
+
+> **Removed from 2.x:** `showMethod`, `hideMethod`, `closeMethod`, `showEasing`, `hideEasing`, `closeEasing`. Use `animation` instead.
+
+---
+
+## Animations
+
+Four built-in CSS `@keyframes` presets — no jQuery, no easing plugin required.
+
+```typescript
+toastr.success('Saved!', '', { animation: 'fade' });   // default
+toastr.info('Note', '', { animation: 'slide' });
+toastr.warning('Heads up', '', { animation: 'bounce' });
+toastr.error('Failed', '', { animation: 'flip' });
 ```
 
-### Callbacks
-```js
-// Define a callback for when the toast is shown/hidden/clicked
-toastr.options.onShown = function() { console.log('hello'); }
-toastr.options.onHidden = function() { console.log('goodbye'); }
-toastr.options.onclick = function() { console.log('clicked'); }
-toastr.options.onCloseClick = function() { console.log('close button clicked'); }
+---
+
+## Dark Mode
+
+Dark styles are applied automatically via `prefers-color-scheme: dark`. You can also force a theme by setting `data-theme` on any ancestor element (including `<html>`):
+
+```html
+<!-- Force dark mode -->
+<html data-theme="dark">
+
+<!-- Force light mode -->
+<html data-theme="light">
 ```
 
-### Animation Options
-Toastr will supply default animations, so you do not have to provide any of these settings. However you have the option to override the animations if you like.
+---
 
-#### Easings
-Optionally override the animation easing to show or hide the toasts. Default is swing. swing and linear are built into jQuery.
-```js
-toastr.options.showEasing = 'swing';
-toastr.options.hideEasing = 'linear';
-toastr.options.closeEasing = 'linear';
+## Accessibility
+
+- Toast containers use `role="alert"` and `aria-live="assertive"` (errors/warnings) or `aria-live="polite"` (info/success)
+- Close buttons have a descriptive `aria-label`
+- **Keyboard support:**
+  - `Escape` dismisses the focused or most-recent toast
+  - `Tab` moves focus to the close button within a toast
+
+---
+
+## Promise API
+
+Every `toastr.*()` call returns a `Promise<ToastInstance>`.
+
+```typescript
+interface ToastInstance {
+  /** Resolves when the toast has finished its dismiss animation. */
+  dismissed: Promise<void>;
+  /** Programmatically remove the toast immediately. */
+  remove(): void;
+  /** Trigger the dismiss animation then remove. */
+  clear(): void;
+}
 ```
 
-Using the jQuery Easing plugin (http://www.gsgd.co.uk/sandbox/jquery/easing/)
-```js
-toastr.options.showEasing = 'easeOutBounce';
-toastr.options.hideEasing = 'easeInBack';
-toastr.options.closeEasing = 'easeInBack';
+```typescript
+// Wait until the user dismisses the toast before proceeding
+const toast = await toastr.success('File uploaded');
+await toast.dismissed;
+navigateAway();
+
+// Or dismiss programmatically
+const toast = await toastr.info('Processing…', '', { timeOut: 0 });
+await doWork();
+toast.clear();
 ```
 
-#### Animation Method
-Use the jQuery show/hide method of your choice. These default to fadeIn/fadeOut. The methods fadeIn/fadeOut, slideDown/slideUp, and show/hide are built into jQuery.
-```js
-toastr.options.showMethod = 'slideDown';
-toastr.options.hideMethod = 'slideUp';
-toastr.options.closeMethod = 'slideUp';
+---
+
+## Imperative API
+
+```typescript
+// Remove all toasts immediately (no animation)
+toastr.remove();
+
+// Dismiss all toasts with animation
+toastr.clear();
+
+// Subscribe to all toast events; returns an unsubscribe function
+const unsubscribe = toastr.subscribe((toast) => {
+  console.log(toast.state); // 'shown' | 'hidden' | 'clicked'
+});
+
+// Stop listening
+unsubscribe();
 ```
 
-### Prevent Duplicates
-Rather than having identical toasts stack, set the preventDuplicates property to true. Duplicates are matched to the previous toast based on their message content.
-```js
-toastr.options.preventDuplicates = true;
-```
+---
 
-### Timeouts
-Control how toastr interacts with users by setting timeouts appropriately.
-```js
-toastr.options.timeOut = 30; // How long the toast will display without user interaction
-toastr.options.extendedTimeOut = 60; // How long the toast will display after a user hovers over it
-```
+## Sticky Toasts (No Auto-Hide)
 
-### Prevent from Auto Hiding
-To prevent toastr from closing based on the timeouts, set the `timeOut` and `extendedTimeOut` options to `0`. The toastr will persist until selected.
-
-```js
+```typescript
 toastr.options.timeOut = 0;
 toastr.options.extendedTimeOut = 0;
+
+toastr.warning('This will not go away on its own.', 'Action required');
 ```
 
-### Progress Bar
-Visually indicate how long before a toast expires.
-```js
-toastr.options.progressBar = true;
-```
+---
 
-### rtl
-Flip the toastr to be displayed properly for right-to-left languages.
-```js
-toastr.options.rtl = true;
-```
-
-## Building Toastr
-
-To build the minified and css versions of Toastr you will need [node](http://nodejs.org) installed. (Use Homebrew or Chocolatey.)
+## Position Classes
 
 ```
-npm install -g gulp karma-cli
+toast-top-right       (default)
+toast-top-left
+toast-top-center
+toast-top-full-width
+toast-bottom-right
+toast-bottom-left
+toast-bottom-center
+toast-bottom-full-width
+```
+
+---
+
+## CDN / UMD
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr-next@3/dist/toastr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/toastr-next@3/dist/toastr.umd.min.js"></script>
+<script>
+  toastr.success('Hello from CDN!');
+</script>
+```
+
+---
+
+## Bundle Formats
+
+| Format | Path | Use case |
+|---|---|---|
+| ESM | `dist/toastr.esm.js` | Bundlers (Vite, Webpack, Rollup) |
+| CJS | `dist/toastr.cjs.js` | Node.js / CommonJS |
+| UMD | `dist/toastr.umd.js` | Legacy bundlers |
+| IIFE | `dist/toastr.iife.js` | `<script>` tag, CDN |
+
+---
+
+## Migration from toastr 2.x
+
+### 1. Remove jQuery
+
+```diff
+- <script src="jquery.min.js"></script>
+- <script src="toastr.min.js"></script>
++ <!-- toastr-next has no dependencies -->
+```
+
+```diff
+- npm install jquery toastr
++ npm install toastr-next
+```
+
+### 2. Update imports
+
+```diff
+- import toastr from 'toastr';
+- import 'toastr/build/toastr.min.css';
++ import { toastr } from 'toastr-next';
++ import 'toastr-next/style';
+```
+
+### 3. Replace animation options
+
+```diff
+- toastr.options.showMethod = 'slideDown';
+- toastr.options.hideMethod = 'slideUp';
+- toastr.options.showEasing = 'easeOutBounce';
+- toastr.options.hideEasing = 'easeInBack';
++ toastr.options.animation = 'slide';
+```
+
+The `showMethod`, `hideMethod`, `closeMethod`, `showEasing`, `hideEasing`, and `closeEasing` options are **removed**. Use the `animation` option with one of the four presets: `'fade'` `'slide'` `'bounce'` `'flip'`.
+
+### 4. Update the `subscribe` callback
+
+`subscribe()` now returns an **unsubscribe function** instead of void:
+
+```diff
+- toastr.subscribe(callback);
++ const unsubscribe = toastr.subscribe(callback);
++ // later…
++ unsubscribe();
+```
+
+### 5. Handle the new return type
+
+`toastr.success()` (and all variants) now return `Promise<ToastInstance>` instead of a jQuery object:
+
+```diff
+- const $toast = toastr.success('Saved!');
+- $toast.css('color', 'red'); // jQuery DOM manipulation
++ const instance = await toastr.success('Saved!');
++ await instance.dismissed;  // wait for it to close
+```
+
+### 6. New: `instance.dismissed` Promise
+
+```typescript
+// Block until the user closes the toast
+const instance = await toastr.warning('Are you sure?', '', { timeOut: 0, closeButton: true });
+await instance.dismissed;
+proceed();
+```
+
+---
+
+## Development
+
+```bash
+# Install dependencies
 npm install
+
+# Run tests (33 Vitest tests)
+npm test
+
+# Watch mode
+npm run test:watch
+
+# Build all bundles
+npm run build
 ```
 
-At this point the dependencies have been installed and you can build Toastr
-
-- Run the analytics `gulp analyze`
-- Run the test `gulp test`
-- Run the build `gulp`
+---
 
 ## Contributing
 
-For a pull request to be considered it must resolve a bug, or add a feature which is beneficial to a large audience.
+Pull requests are welcome. Please:
 
-Pull requests must pass existing unit tests, CI processes, and add additional tests to indicate successful operation of a new feature, or the resolution of an identified bug.
+- Pass all existing tests (`npm test`)
+- Add tests for new behaviour
+- Target the `develop` branch
 
-Requests must be made against the `develop` branch. Pull requests submitted against the `master` branch will not be considered.
-
-All pull requests are subject to approval by the repository owners, who have sole discretion over acceptance or denial.
-
-## Authors
-**John Papa**
-
-+ [http://twitter.com/John_Papa](http://twitter.com/John_Papa)
-
-**Tim Ferrell**
-
-+ [http://twitter.com/ferrell_tim](http://twitter.com/ferrell_tim)
-
-**Hans Fjällemark**
-
-+ [http://twitter.com/hfjallemark](http://twitter.com/hfjallemark)
-
-## Credits
-Inspired by https://github.com/Srirangan/notifer.js/.
-
-## Copyright
-Copyright © 2012-2015
+---
 
 ## License
-toastr is under MIT license - http://www.opensource.org/licenses/mit-license.php
+
+MIT — see [LICENSE](LICENSE).
+
+---
+
+## Credits
+
+Originally created by [John Papa](https://twitter.com/John_Papa), [Tim Ferrell](https://twitter.com/ferrell_tim), and [Hans Fjällemark](https://twitter.com/hfjallemark).  
+Inspired by [notifer.js](https://github.com/Srirangan/notifer.js/).  
+toastr-next 3.x is a TypeScript rewrite with zero dependencies.

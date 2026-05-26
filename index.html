@@ -1,0 +1,1507 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>toastr-next — Zero Dependency Toast Notifications</title>
+		<link
+			rel="icon"
+			href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍞</text></svg>"
+		/>
+		<style>
+			*,
+			*::before,
+			*::after {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+			:root {
+				--bg: #0f0f13;
+				--surface: #18181f;
+				--surface2: #22222c;
+				--border: rgba(255, 255, 255, 0.08);
+				--text: #e8e8f0;
+				--muted: #8888a4;
+				--accent: #7c6af7;
+				--radius: 12px;
+				--font: system-ui, -apple-system, "Segoe UI", sans-serif;
+			}
+			@media (prefers-color-scheme: light) {
+				:root {
+					--bg: #f5f5fb;
+					--surface: #fff;
+					--surface2: #ebebf5;
+					--border: rgba(0, 0, 0, 0.12);
+					--text: #1a1a2e;
+					--muted: #666688;
+					--accent: #5b50d6;
+				}
+				.control-group select {
+					background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666688' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+				}
+				.control-group select:focus,
+				.control-group input:focus {
+					box-shadow: 0 0 0 3px rgba(91, 80, 214, 0.15);
+				}
+				pre {
+					background: #f2f2fa;
+				}
+				.kw {
+					color: #7c3aed;
+				}
+				.fn {
+					color: #1d4ed8;
+				}
+				.str {
+					color: #15803d;
+				}
+				.cmt {
+					color: #64748b;
+					font-style: italic;
+				}
+				.num {
+					color: #c2410c;
+				}
+				.badge-purple {
+					background: rgba(91, 80, 214, 0.1);
+					border-color: rgba(91, 80, 214, 0.25);
+					color: #5b50d6;
+				}
+				.badge-green {
+					background: rgba(21, 128, 61, 0.1);
+					border-color: rgba(21, 128, 61, 0.25);
+					color: #15803d;
+				}
+			}
+			body {
+				font-family: var(--font);
+				background: var(--bg);
+				color: var(--text);
+				min-height: 100vh;
+				line-height: 1.6;
+			}
+			header {
+				padding: 64px 24px 48px;
+				text-align: center;
+				border-bottom: 1px solid var(--border);
+				background: radial-gradient(
+					ellipse at top,
+					rgba(124, 106, 247, 0.12) 0%,
+					transparent 70%
+				);
+			}
+			.hero-icon {
+				font-size: 56px;
+				margin-bottom: 16px;
+				display: block;
+			}
+			header h1 {
+				font-size: clamp(28px, 5vw, 48px);
+				font-weight: 700;
+				letter-spacing: -0.02em;
+				margin-bottom: 12px;
+			}
+			header h1 span {
+				color: var(--accent);
+			}
+			header p {
+				font-size: 17px;
+				color: var(--muted);
+				max-width: 520px;
+				margin: 0 auto 24px;
+			}
+			.badges {
+				display: flex;
+				gap: 8px;
+				justify-content: center;
+				flex-wrap: wrap;
+				margin-bottom: 20px;
+			}
+			.badge {
+				font-size: 12px;
+				font-weight: 600;
+				padding: 4px 12px;
+				border-radius: 999px;
+				border: 1px solid var(--border);
+				background: var(--surface);
+				color: var(--muted);
+			}
+			.badge-purple {
+				background: rgba(124, 106, 247, 0.15);
+				border-color: rgba(124, 106, 247, 0.3);
+				color: #a89af9;
+			}
+			.badge-green {
+				background: rgba(52, 199, 89, 0.12);
+				border-color: rgba(52, 199, 89, 0.3);
+				color: #4cd96a;
+			}
+			.install-snippet {
+				display: inline-flex;
+				align-items: center;
+				gap: 12px;
+				background: var(--surface);
+				border: 1px solid var(--border);
+				border-radius: var(--radius);
+				padding: 10px 18px;
+				font-family: "Fira Code", monospace;
+				font-size: 14px;
+				color: var(--text);
+				margin-top: 8px;
+				cursor: pointer;
+				transition: border-color 0.2s;
+			}
+			.install-snippet:hover {
+				border-color: var(--accent);
+			}
+			.install-snippet code {
+				color: var(--accent);
+			}
+			.copy-btn {
+				font-size: 11px;
+				padding: 3px 8px;
+				border-radius: 6px;
+				border: 1px solid var(--border);
+				background: var(--surface2);
+				color: var(--muted);
+				cursor: pointer;
+				font-family: var(--font);
+				transition: all 0.15s;
+			}
+			.copy-btn:hover {
+				background: var(--accent);
+				color: #fff;
+				border-color: var(--accent);
+			}
+			main {
+				max-width: 1000px;
+				margin: 0 auto;
+				padding: 48px 24px 80px;
+			}
+			section {
+				margin-bottom: 56px;
+			}
+			h2 {
+				font-size: 22px;
+				font-weight: 700;
+				margin-bottom: 20px;
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			h2 .label {
+				font-size: 11px;
+				font-weight: 600;
+				text-transform: uppercase;
+				letter-spacing: 0.1em;
+				color: var(--muted);
+				border: 1px solid var(--border);
+				border-radius: 999px;
+				padding: 2px 10px;
+			}
+			.card {
+				background: var(--surface);
+				border: 1px solid var(--border);
+				border-radius: var(--radius);
+				padding: 24px;
+				margin-bottom: 16px;
+			}
+			.btn-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+				gap: 10px;
+			}
+			.btn {
+				padding: 11px 16px;
+				border-radius: 9px;
+				border: none;
+				cursor: pointer;
+				font-size: 14px;
+				font-weight: 600;
+				font-family: var(--font);
+				transition:
+					transform 0.1s,
+					filter 0.15s;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 7px;
+				color: #fff;
+			}
+			.btn:hover {
+				filter: brightness(1.12);
+				transform: translateY(-1px);
+			}
+			.btn:active {
+				transform: scale(0.97);
+			}
+			.btn-success {
+				background: #2d6a4f;
+			}
+			.btn-error {
+				background: #9b2226;
+			}
+			.btn-info {
+				background: #1d4e89;
+			}
+			.btn-warning {
+				background: #7b4f12;
+			}
+			.btn-dark {
+				background: var(--surface2);
+				border: 1px solid var(--border);
+				color: var(--text);
+			}
+			.btn-accent {
+				background: var(--accent);
+			}
+			.btn-clear {
+				background: transparent;
+				border: 1px solid var(--border);
+				color: var(--muted);
+			}
+			.controls {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+				gap: 16px;
+				margin-bottom: 20px;
+			}
+			.control-group label {
+				display: block;
+				font-size: 12px;
+				font-weight: 600;
+				text-transform: uppercase;
+				letter-spacing: 0.06em;
+				color: var(--muted);
+				margin-bottom: 6px;
+			}
+			.control-group select,
+			.control-group input {
+				width: 100%;
+				background: var(--surface2);
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				padding: 8px 12px;
+				color: var(--text);
+				font-family: var(--font);
+				font-size: 14px;
+				outline: none;
+				transition:
+					border-color 0.2s,
+					box-shadow 0.2s;
+			}
+			.control-group select:focus,
+			.control-group input:focus {
+				border-color: var(--accent);
+				box-shadow: 0 0 0 3px rgba(124, 106, 247, 0.18);
+			}
+			.control-group select {
+				appearance: none;
+				-webkit-appearance: none;
+				padding-right: 36px;
+				cursor: pointer;
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238888a4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+				background-repeat: no-repeat;
+				background-position: right 10px center;
+			}
+			.control-group input[type="number"]::-webkit-inner-spin-button,
+			.control-group input[type="number"]::-webkit-outer-spin-button {
+				-webkit-appearance: none;
+				margin: 0;
+			}
+			.control-group input[type="number"] {
+				-moz-appearance: textfield;
+				appearance: textfield;
+			}
+			.toggle-row {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 10px;
+				margin-bottom: 20px;
+			}
+			.toggle-label {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				font-size: 13px;
+				cursor: pointer;
+				user-select: none;
+			}
+			.toggle-label input {
+				width: 16px;
+				height: 16px;
+				accent-color: var(--accent);
+				cursor: pointer;
+			}
+			.compare {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 16px;
+			}
+			@media (max-width: 600px) {
+				.compare {
+					grid-template-columns: 1fr;
+				}
+			}
+			.compare-col {
+				border-radius: var(--radius);
+				overflow: hidden;
+			}
+			.compare-col h3 {
+				font-size: 13px;
+				font-weight: 700;
+				padding: 10px 16px;
+				letter-spacing: 0.05em;
+			}
+			.compare-col.before h3 {
+				background: #3a1414;
+				color: #f28b82;
+			}
+			.compare-col.after h3 {
+				background: #0e3322;
+				color: #81c995;
+			}
+			.compare-list {
+				list-style: none;
+				background: var(--surface);
+				border: 1px solid var(--border);
+				border-radius: 0 0 var(--radius) var(--radius);
+			}
+			.compare-list li {
+				padding: 9px 16px;
+				font-size: 13px;
+				border-bottom: 1px solid var(--border);
+				display: flex;
+				align-items: center;
+				gap: 10px;
+			}
+			.compare-list li:last-child {
+				border-bottom: none;
+			}
+			.icon-x {
+				color: #f28b82;
+				font-weight: 700;
+			}
+			.icon-chk {
+				color: #81c995;
+				font-weight: 700;
+			}
+			.size-bars {
+				display: flex;
+				flex-direction: column;
+				gap: 12px;
+				margin-bottom: 24px;
+			}
+			.size-bar-row {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				font-size: 13px;
+			}
+			.size-bar-label {
+				width: 120px;
+				flex-shrink: 0;
+				color: var(--muted);
+			}
+			.size-bar-track {
+				flex: 1;
+				height: 24px;
+				background: var(--surface2);
+				border-radius: 6px;
+				overflow: hidden;
+			}
+			.size-bar-fill {
+				height: 100%;
+				border-radius: 6px;
+				display: flex;
+				align-items: center;
+				padding-left: 10px;
+				font-size: 12px;
+				font-weight: 700;
+				color: #fff;
+			}
+			.size-bar-old {
+				background: linear-gradient(90deg, #9b2226, #c1121f);
+			}
+			.size-bar-new {
+				background: linear-gradient(90deg, #2d6a4f, #40916c);
+			}
+			.code-tabs {
+				display: flex;
+				gap: 4px;
+				margin-bottom: -1px;
+			}
+			.code-tab {
+				padding: 6px 14px;
+				font-size: 12px;
+				font-weight: 600;
+				border-radius: 7px 7px 0 0;
+				border: 1px solid var(--border);
+				border-bottom: none;
+				background: var(--surface2);
+				color: var(--muted);
+				cursor: pointer;
+			}
+			.code-tab.active {
+				background: var(--surface);
+				color: var(--text);
+			}
+			pre {
+				background: var(--surface);
+				border: 1px solid var(--border);
+				border-radius: 0 var(--radius) var(--radius) var(--radius);
+				padding: 20px;
+				overflow-x: auto;
+				font-family: "Fira Code", "JetBrains Mono", monospace;
+				font-size: 13px;
+				line-height: 1.7;
+			}
+			.kw {
+				color: #c792ea;
+			}
+			.fn {
+				color: #82aaff;
+			}
+			.str {
+				color: #c3e88d;
+			}
+			.cmt {
+				color: #546e7a;
+				font-style: italic;
+			}
+			.num {
+				color: #f78c6c;
+			}
+			.stat-strip {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+				gap: 1px;
+				background: var(--border);
+				border: 1px solid var(--border);
+				border-radius: var(--radius);
+				overflow: hidden;
+				margin-bottom: 32px;
+			}
+			.stat-item {
+				background: var(--surface);
+				padding: 20px 16px;
+				text-align: center;
+			}
+			.stat-val {
+				font-size: 26px;
+				font-weight: 700;
+				color: var(--accent);
+			}
+			.stat-lbl {
+				font-size: 12px;
+				color: var(--muted);
+				margin-top: 4px;
+			}
+			/* ──────── Custom dropdown (ARIA listbox combobox) ──────── */
+			.dd {
+				position: relative;
+				width: 100%;
+			}
+			.dd-trigger {
+				width: 100%;
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				background: var(--surface2);
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				padding: 8px 12px;
+				color: var(--text);
+				font: inherit;
+				font-size: 14px;
+				cursor: pointer;
+				outline: none;
+				transition:
+					border-color 0.18s,
+					box-shadow 0.18s,
+					background 0.18s;
+				text-align: left;
+			}
+			.dd-trigger:hover {
+				border-color: rgba(124, 106, 247, 0.45);
+			}
+			.dd-trigger:focus-visible,
+			.dd[data-open="true"] .dd-trigger {
+				border-color: var(--accent);
+				box-shadow: 0 0 0 3px rgba(124, 106, 247, 0.18);
+			}
+			@media (prefers-color-scheme: light) {
+				.dd-trigger:focus-visible,
+				.dd[data-open="true"] .dd-trigger {
+					box-shadow: 0 0 0 3px rgba(91, 80, 214, 0.15);
+				}
+			}
+			.dd-icon {
+				display: inline-flex;
+				width: 18px;
+				height: 18px;
+				align-items: center;
+				justify-content: center;
+				font-size: 13px;
+				border-radius: 5px;
+				flex-shrink: 0;
+			}
+			.dd-icon[data-tone="success"] {
+				background: rgba(45, 106, 79, 0.25);
+				color: #4cd96a;
+			}
+			.dd-icon[data-tone="error"] {
+				background: rgba(155, 34, 38, 0.25);
+				color: #f28b82;
+			}
+			.dd-icon[data-tone="info"] {
+				background: rgba(29, 78, 137, 0.3);
+				color: #82aaff;
+			}
+			.dd-icon[data-tone="warning"] {
+				background: rgba(123, 79, 18, 0.3);
+				color: #fbbf24;
+			}
+			.dd-icon[data-tone="anim"],
+			.dd-icon[data-tone="pos"] {
+				background: rgba(124, 106, 247, 0.18);
+				color: var(--accent);
+			}
+			.dd-label {
+				flex: 1;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+			.dd-caret {
+				width: 14px;
+				height: 14px;
+				flex-shrink: 0;
+				color: var(--muted);
+				transition: transform 0.2s ease;
+			}
+			.dd[data-open="true"] .dd-caret {
+				transform: rotate(180deg);
+				color: var(--accent);
+			}
+			.dd-menu {
+				position: absolute;
+				top: calc(100% + 6px);
+				left: 0;
+				right: 0;
+				background: var(--surface);
+				border: 1px solid var(--border);
+				border-radius: 10px;
+				padding: 6px;
+				margin: 0;
+				list-style: none;
+				z-index: 100;
+				max-height: 280px;
+				overflow-y: auto;
+				box-shadow:
+					0 12px 32px -8px rgba(0, 0, 0, 0.5),
+					0 4px 12px -4px rgba(0, 0, 0, 0.3);
+				opacity: 0;
+				transform: translateY(-4px) scale(0.98);
+				transform-origin: top center;
+				pointer-events: none;
+				transition:
+					opacity 0.16s ease,
+					transform 0.16s ease;
+				outline: none;
+			}
+			@media (prefers-color-scheme: light) {
+				.dd-menu {
+					box-shadow:
+						0 12px 32px -8px rgba(15, 15, 30, 0.18),
+						0 4px 12px -4px rgba(15, 15, 30, 0.1);
+				}
+			}
+			.dd[data-open="true"] .dd-menu {
+				opacity: 1;
+				transform: translateY(0) scale(1);
+				pointer-events: auto;
+			}
+			.dd-menu::-webkit-scrollbar {
+				width: 8px;
+			}
+			.dd-menu::-webkit-scrollbar-track {
+				background: transparent;
+			}
+			.dd-menu::-webkit-scrollbar-thumb {
+				background: var(--border);
+				border-radius: 4px;
+			}
+			.dd-option {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				padding: 8px 10px;
+				border-radius: 7px;
+				font-size: 14px;
+				color: var(--text);
+				cursor: pointer;
+				transition:
+					background 0.12s,
+					color 0.12s;
+				user-select: none;
+			}
+			.dd-option:hover,
+			.dd-option[data-active="true"] {
+				background: var(--surface2);
+			}
+			.dd-option[aria-selected="true"] {
+				color: var(--accent);
+				font-weight: 600;
+			}
+			.dd-option[aria-selected="true"]::after {
+				content: "✓";
+				margin-left: auto;
+				font-weight: 700;
+				color: var(--accent);
+			}
+			@media (prefers-reduced-motion: reduce) {
+				.dd-caret,
+				.dd-menu {
+					transition: none;
+				}
+			}
+
+			footer {
+				text-align: center;
+				padding: 32px 24px;
+				border-top: 1px solid var(--border);
+				font-size: 13px;
+				color: var(--muted);
+			}
+			footer a {
+				color: var(--accent);
+				text-decoration: none;
+			}
+			footer a:hover {
+				text-decoration: underline;
+			}
+			#toast-fired {
+				font-weight: 700;
+				color: var(--accent);
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<span class="hero-icon" aria-hidden="true">🍞</span>
+			<h1>toastr<span>-next</span></h1>
+			<p>
+				The legendary notification library revived. Zero dependencies.
+				TypeScript. CSS animations. Dark mode. ARIA.
+			</p>
+			<div class="badges">
+				<span class="badge badge-green">✓ Zero dependencies</span>
+				<span class="badge badge-purple">v3.0.0</span>
+				<span class="badge">MIT License</span>
+				<span class="badge badge-green">WCAG 2.1 AA</span>
+				<span class="badge">TypeScript</span>
+				<span class="badge badge-purple">Dark mode auto</span>
+			</div>
+			<div>
+				<div class="install-snippet" onclick="copyInstall()">
+					<code>npm install toastr-next</code>
+					<button class="copy-btn" id="copyBtn">copy</button>
+				</div>
+			</div>
+		</header>
+
+		<main>
+			<div class="stat-strip">
+				<div class="stat-item">
+					<div class="stat-val">~6 KB</div>
+					<div class="stat-lbl">minified + gzipped</div>
+				</div>
+				<div class="stat-item">
+					<div class="stat-val">0</div>
+					<div class="stat-lbl">dependencies</div>
+				</div>
+				<div class="stat-item">
+					<div class="stat-val">4</div>
+					<div class="stat-lbl">animation styles</div>
+				</div>
+				<div class="stat-item">
+					<div class="stat-val">8</div>
+					<div class="stat-lbl">positions</div>
+				</div>
+				<div class="stat-item">
+					<div class="stat-val" id="toast-fired">0</div>
+					<div class="stat-lbl">toasts fired here</div>
+				</div>
+			</div>
+
+			<section>
+				<h2>🚀 Quick fire <span class="label">Try it</span></h2>
+				<div class="card">
+					<div class="btn-grid">
+						<button class="btn btn-success" onclick="fire('success')">
+							✓ Success
+						</button>
+						<button class="btn btn-error" onclick="fire('error')">
+							✕ Error
+						</button>
+						<button class="btn btn-info" onclick="fire('info')">ℹ Info</button>
+						<button class="btn btn-warning" onclick="fire('warning')">
+							⚠ Warning
+						</button>
+						<button class="btn btn-accent" onclick="fireWithTitle()">
+							📌 With Title
+						</button>
+						<button class="btn btn-dark" onclick="fireSticky()">
+							📌 Sticky
+						</button>
+						<button class="btn btn-dark" onclick="fireProgress()">
+							⏱ Progress Bar
+						</button>
+						<button class="btn btn-dark" onclick="fireClose()">
+							✕ Close Button
+						</button>
+						<button class="btn btn-dark" onclick="fireHtml()">
+							🎨 HTML message
+						</button>
+						<button class="btn btn-dark" onclick="firePromise()">
+							⏳ Await dismiss
+						</button>
+						<button class="btn btn-dark" onclick="fireStack()">
+							📚 Stack 4 toasts
+						</button>
+						<button class="btn btn-clear" onclick="toastr.clear()">
+							🗑 Clear all
+						</button>
+					</div>
+				</div>
+			</section>
+
+			<section>
+				<h2>🎛 Playground <span class="label">Configure</span></h2>
+				<div class="card">
+					<div class="controls">
+						<div class="control-group">
+							<label id="lbl-pg-type">Toast Type</label>
+							<div
+								class="dd"
+								id="pg-type"
+								data-labelledby="lbl-pg-type"
+								data-tone-key="value"
+								data-options='[
+									{"value":"success","label":"Success","icon":"✓","tone":"success"},
+									{"value":"error","label":"Error","icon":"✕","tone":"error"},
+									{"value":"info","label":"Info","icon":"ℹ","tone":"info"},
+									{"value":"warning","label":"Warning","icon":"⚠","tone":"warning"}
+								]'
+								data-value="info"
+							></div>
+						</div>
+						<div class="control-group">
+							<label id="lbl-pg-anim">Animation</label>
+							<div
+								class="dd"
+								id="pg-anim"
+								data-labelledby="lbl-pg-anim"
+								data-options='[
+									{"value":"fade","label":"Fade","icon":"≋","tone":"anim"},
+									{"value":"slide","label":"Slide","icon":"⇥","tone":"anim"},
+									{"value":"bounce","label":"Bounce","icon":"⤴","tone":"anim"},
+									{"value":"flip","label":"Flip","icon":"⟳","tone":"anim"}
+								]'
+								data-value="fade"
+							></div>
+						</div>
+						<div class="control-group">
+							<label id="lbl-pg-pos">Position</label>
+							<div
+								class="dd"
+								id="pg-pos"
+								data-labelledby="lbl-pg-pos"
+								data-options='[
+									{"value":"toast-top-right","label":"Top Right","icon":"◹","tone":"pos"},
+									{"value":"toast-top-left","label":"Top Left","icon":"◸","tone":"pos"},
+									{"value":"toast-top-center","label":"Top Center","icon":"◓","tone":"pos"},
+									{"value":"toast-top-full-width","label":"Top Full Width","icon":"▔","tone":"pos"},
+									{"value":"toast-bottom-right","label":"Bottom Right","icon":"◿","tone":"pos"},
+									{"value":"toast-bottom-left","label":"Bottom Left","icon":"◺","tone":"pos"},
+									{"value":"toast-bottom-center","label":"Bottom Center","icon":"◒","tone":"pos"},
+									{"value":"toast-bottom-full-width","label":"Bottom Full Width","icon":"▁","tone":"pos"}
+								]'
+								data-value="toast-top-right"
+							></div>
+						</div>
+						<div class="control-group">
+							<label>Timeout ms (0 = sticky)</label>
+							<input
+								type="number"
+								id="pg-timeout"
+								value="5000"
+								min="0"
+								step="500"
+							/>
+						</div>
+						<div class="control-group">
+							<label>Title (optional)</label>
+							<input type="text" id="pg-title" placeholder="Toast title" />
+						</div>
+						<div class="control-group">
+							<label>Message</label>
+							<input
+								type="text"
+								id="pg-msg"
+								value="This is a custom notification!"
+							/>
+						</div>
+					</div>
+					<div class="toggle-row">
+						<label class="toggle-label"
+							><input type="checkbox" id="pg-close" /> Close button</label
+						>
+						<label class="toggle-label"
+							><input type="checkbox" id="pg-progress" checked /> Progress
+							bar</label
+						>
+						<label class="toggle-label"
+							><input type="checkbox" id="pg-newest" checked /> Newest on
+							top</label
+						>
+						<label class="toggle-label"
+							><input type="checkbox" id="pg-dup" /> Prevent duplicates</label
+						>
+						<label class="toggle-label"
+							><input type="checkbox" id="pg-rtl" /> RTL mode</label
+						>
+					</div>
+					<button
+						class="btn btn-accent"
+						style="width: 100%; padding: 14px"
+						onclick="firePlayground()"
+					>
+						🎯 Fire Playground Toast
+					</button>
+				</div>
+			</section>
+
+			<section>
+				<h2>✨ Animation showcase <span class="label">4 styles</span></h2>
+				<div class="card">
+					<div class="btn-grid">
+						<button class="btn btn-accent" onclick="fireAnim('fade')">
+							Fade
+						</button>
+						<button class="btn btn-accent" onclick="fireAnim('slide')">
+							Slide
+						</button>
+						<button class="btn btn-accent" onclick="fireAnim('bounce')">
+							Bounce
+						</button>
+						<button class="btn btn-accent" onclick="fireAnim('flip')">
+							Flip
+						</button>
+					</div>
+				</div>
+			</section>
+
+			<section>
+				<h2>📊 Before &amp; after <span class="label">The revival</span></h2>
+				<div class="size-bars">
+					<div class="size-bar-row">
+						<span class="size-bar-label">toastr v2 (old)</span>
+						<div class="size-bar-track">
+							<div class="size-bar-fill size-bar-old" style="width: 87%">
+								87 KB (jQuery + toastr)
+							</div>
+						</div>
+					</div>
+					<div class="size-bar-row">
+						<span class="size-bar-label">toastr-next v3</span>
+						<div class="size-bar-track">
+							<div class="size-bar-fill size-bar-new" style="width: 6%">
+								~6 KB
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="compare">
+					<div class="compare-col before">
+						<h3>✕ toastr v2 (2015)</h3>
+						<ul class="compare-list">
+							<li>
+								<span class="icon-x">✕</span> Requires jQuery (~87 KB overhead)
+							</li>
+							<li>
+								<span class="icon-x">✕</span> JS-driven animations (layout
+								thrash)
+							</li>
+							<li><span class="icon-x">✕</span> No dark mode</li>
+							<li><span class="icon-x">✕</span> No TypeScript types</li>
+							<li>
+								<span class="icon-x">✕</span> Inaccessible (screen readers
+								blind)
+							</li>
+							<li><span class="icon-x">✕</span> No ESM / tree-shaking</li>
+							<li>
+								<span class="icon-x">✕</span> Gulp + LESS (abandoned toolchain)
+							</li>
+							<li><span class="icon-x">✕</span> No Promise API</li>
+							<li><span class="icon-x">✕</span> No keyboard support</li>
+							<li>
+								<span class="icon-x">✕</span> PNG sprite icons (extra HTTP
+								request)
+							</li>
+						</ul>
+					</div>
+					<div class="compare-col after">
+						<h3>✓ toastr-next v3 (2026)</h3>
+						<ul class="compare-list">
+							<li>
+								<span class="icon-chk">✓</span> Zero dependencies — pure vanilla
+								JS
+							</li>
+							<li>
+								<span class="icon-chk">✓</span> CSS @keyframes — buttery smooth
+							</li>
+							<li>
+								<span class="icon-chk">✓</span> Auto dark mode via
+								prefers-color-scheme
+							</li>
+							<li>
+								<span class="icon-chk">✓</span> Full TypeScript types + JSDoc
+							</li>
+							<li>
+								<span class="icon-chk">✓</span> ARIA live regions, roles,
+								keyboard nav
+							</li>
+							<li><span class="icon-chk">✓</span> ESM + CJS + IIFE bundles</li>
+							<li><span class="icon-chk">✓</span> Vite build + Vitest tests</li>
+							<li>
+								<span class="icon-chk">✓</span> Promise API (await
+								toast.onDismissed)
+							</li>
+							<li>
+								<span class="icon-chk">✓</span> Escape key + focus management
+							</li>
+							<li>
+								<span class="icon-chk">✓</span> CSS pseudo-element icons (no
+								images)
+							</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+
+			<section>
+				<h2>💻 Code samples <span class="label">Drop-in API</span></h2>
+				<div class="code-tabs">
+					<div class="code-tab active" onclick="showTab(0, this)">
+						Basic usage
+					</div>
+					<div class="code-tab" onclick="showTab(1, this)">Promise API</div>
+					<div class="code-tab" onclick="showTab(2, this)">Migration</div>
+				</div>
+				<div id="tab-0">
+					<pre><span class="cmt">// Install</span>
+npm install toastr-next
+
+<span class="cmt">// Import (ESM)</span>
+<span class="kw">import</span> toastr <span class="kw">from</span> <span class="str">'toastr-next'</span>;
+<span class="kw">import</span> <span class="str">'toastr-next/dist/toastr.css'</span>;
+
+<span class="cmt">// Same API as before — no jQuery!</span>
+toastr.<span class="fn">success</span>(<span class="str">'Saved!'</span>);
+toastr.<span class="fn">error</span>(<span class="str">'Failed'</span>, <span class="str">'Oops'</span>);
+toastr.<span class="fn">info</span>(<span class="str">'New update'</span>);
+toastr.<span class="fn">warning</span>(<span class="str">'Low disk space'</span>, <span class="str">'Warning'</span>);
+
+<span class="cmt">// Global options</span>
+toastr.options = {
+  positionClass: <span class="str">'toast-bottom-right'</span>,
+  animation: <span class="str">'bounce'</span>,
+  progressBar: <span class="kw">true</span>,
+  closeButton: <span class="kw">true</span>,
+};</pre>
+				</div>
+				<div id="tab-1" style="display: none">
+					<pre><span class="cmt">// Returns a response object with a Promise</span>
+<span class="kw">const</span> toast = toastr.<span class="fn">success</span>(<span class="str">'Changes saved!'</span>);
+
+<span class="cmt">// Resolves when dismissed</span>
+<span class="kw">await</span> toast.onDismissed;
+window.location.<span class="fn">assign</span>(<span class="str">'/dashboard'</span>);
+
+<span class="cmt">// Chain multiple toasts sequentially</span>
+<span class="kw">async function</span> <span class="fn">multiStep</span>() {
+  <span class="kw">await</span> toastr.<span class="fn">info</span>(<span class="str">'Step 1: Validating...'</span>).onDismissed;
+  <span class="kw">await</span> toastr.<span class="fn">info</span>(<span class="str">'Step 2: Uploading...'</span>).onDismissed;
+  toastr.<span class="fn">success</span>(<span class="str">'All done!'</span>);
+}</pre>
+				</div>
+				<div id="tab-2" style="display: none">
+					<pre><span class="cmt">// OLD (toastr v2 — jQuery required)</span>
+<span class="cmt">// &lt;script src="jquery.min.js"&gt;&lt;/script&gt;  ← 30 KB</span>
+<span class="cmt">// &lt;script src="toastr.min.js"&gt;&lt;/script&gt;  ← 5 KB</span>
+<span class="cmt">// Total: ~87 KB just to show a toast</span>
+
+<span class="cmt">// NEW (toastr-next v3 — zero deps)</span>
+<span class="cmt">// &lt;link rel="stylesheet" href="toastr.css"&gt;</span>
+<span class="cmt">// &lt;script src="toastr.js"&gt;&lt;/script&gt;</span>
+<span class="cmt">// Total: ~6 KB including CSS</span>
+
+<span class="cmt">// API is identical — just remove jQuery</span>
+toastr.<span class="fn">success</span>(<span class="str">'Hello!'</span>);  <span class="cmt">// works the same</span>
+
+<span class="cmt">// New options</span>
+toastr.options.animation = <span class="str">'bounce'</span>;   <span class="cmt">// NEW</span>
+<span class="kw">await</span> toastr.<span class="fn">info</span>(<span class="str">'Hi'</span>).onDismissed; <span class="cmt">// NEW</span></pre>
+				</div>
+			</section>
+		</main>
+
+		<footer>
+			<p>
+				<strong>toastr-next v3.0.0</strong> — A revival of
+				<a
+					href="https://github.com/CodeSeven/toastr"
+					target="_blank"
+					rel="noopener"
+					>CodeSeven/toastr</a
+				>
+				for the
+				<a
+					href="https://dev.to/challenges/github-2026-05-21"
+					target="_blank"
+					rel="noopener"
+					>GitHub Finish-Up-A-Thon 2026</a
+				>
+				&nbsp;·&nbsp; Built with GitHub Copilot &nbsp;·&nbsp; MIT License
+			</p>
+		</footer>
+
+		<!-- Expose toastr globally from the Vite dev module graph -->
+		<script type="module">
+			import { toastr } from "/src/index.ts";
+			window.toastr = toastr;
+		</script>
+
+		<script>
+			var firedCount = 0;
+			function bump() {
+				firedCount++;
+				document.getElementById("toast-fired").textContent = firedCount;
+			}
+
+			/* ──────── Custom dropdown (WAI-ARIA listbox combobox) ──────── */
+			(function () {
+				var openDd = null;
+				var caretSvg =
+					'<svg class="dd-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
+
+				function buildOption(opt, selected, idx) {
+					var li = document.createElement("li");
+					li.className = "dd-option";
+					li.id = "ddo-" + Math.random().toString(36).slice(2, 8) + "-" + idx;
+					li.role = "option";
+					li.dataset.value = opt.value;
+					li.setAttribute("aria-selected", String(opt.value === selected));
+					var icon = document.createElement("span");
+					icon.className = "dd-icon";
+					icon.setAttribute("data-tone", opt.tone || "anim");
+					icon.setAttribute("aria-hidden", "true");
+					icon.textContent = opt.icon || "•";
+					var lbl = document.createElement("span");
+					lbl.className = "dd-label";
+					lbl.textContent = opt.label;
+					li.appendChild(icon);
+					li.appendChild(lbl);
+					return li;
+				}
+
+				function initDropdown(root) {
+					var options;
+					try {
+						options = JSON.parse(root.dataset.options || "[]");
+					} catch (e) {
+						return;
+					}
+					var listboxId = root.id + "-listbox";
+					var labelledBy = root.dataset.labelledby;
+					var selected = root.dataset.value || (options[0] && options[0].value);
+
+					// Trigger button
+					var trigger = document.createElement("button");
+					trigger.type = "button";
+					trigger.className = "dd-trigger";
+					trigger.setAttribute("role", "combobox");
+					trigger.setAttribute("aria-haspopup", "listbox");
+					trigger.setAttribute("aria-expanded", "false");
+					trigger.setAttribute("aria-controls", listboxId);
+					if (labelledBy) trigger.setAttribute("aria-labelledby", labelledBy);
+
+					var triggerIcon = document.createElement("span");
+					triggerIcon.className = "dd-icon";
+					var triggerLabel = document.createElement("span");
+					triggerLabel.className = "dd-label";
+					trigger.appendChild(triggerIcon);
+					trigger.appendChild(triggerLabel);
+					trigger.insertAdjacentHTML("beforeend", caretSvg);
+
+					// Listbox
+					var menu = document.createElement("ul");
+					menu.className = "dd-menu";
+					menu.id = listboxId;
+					menu.setAttribute("role", "listbox");
+					menu.tabIndex = -1;
+					if (labelledBy) menu.setAttribute("aria-labelledby", labelledBy);
+
+					options.forEach(function (opt, i) {
+						var li = buildOption(opt, selected, i);
+						li.addEventListener("click", function () {
+							setValue(opt.value);
+							close(true);
+						});
+						li.addEventListener("mouseenter", function () {
+							setActive(i);
+						});
+						menu.appendChild(li);
+					});
+
+					root.appendChild(trigger);
+					root.appendChild(menu);
+
+					var activeIdx = options.findIndex(function (o) {
+						return o.value === selected;
+					});
+					if (activeIdx < 0) activeIdx = 0;
+
+					function paintTrigger() {
+						var current = options.find(function (o) {
+							return o.value === root.dataset.value;
+						});
+						if (!current) return;
+						triggerIcon.setAttribute("data-tone", current.tone || "anim");
+						triggerIcon.textContent = current.icon || "•";
+						triggerLabel.textContent = current.label;
+					}
+
+					function setValue(val) {
+						root.dataset.value = val;
+						Array.prototype.forEach.call(menu.children, function (li) {
+							li.setAttribute(
+								"aria-selected",
+								String(li.dataset.value === val),
+							);
+						});
+						paintTrigger();
+						root.dispatchEvent(
+							new CustomEvent("change", { detail: { value: val } }),
+						);
+					}
+
+					function setActive(i) {
+						activeIdx = i;
+						Array.prototype.forEach.call(menu.children, function (li, idx) {
+							if (idx === i) {
+								li.setAttribute("data-active", "true");
+								trigger.setAttribute("aria-activedescendant", li.id);
+								li.scrollIntoView({ block: "nearest" });
+							} else {
+								li.removeAttribute("data-active");
+							}
+						});
+					}
+
+					function open() {
+						if (openDd && openDd !== root) openDd._close(false);
+						root.dataset.open = "true";
+						trigger.setAttribute("aria-expanded", "true");
+						setActive(activeIdx);
+						openDd = root;
+					}
+
+					function close(focusTrigger) {
+						root.dataset.open = "false";
+						trigger.setAttribute("aria-expanded", "false");
+						trigger.removeAttribute("aria-activedescendant");
+						if (openDd === root) openDd = null;
+						if (focusTrigger) trigger.focus();
+					}
+					root._close = close;
+
+					trigger.addEventListener("click", function () {
+						root.dataset.open === "true" ? close(false) : open();
+					});
+
+					trigger.addEventListener("keydown", function (e) {
+						switch (e.key) {
+							case "ArrowDown":
+							case "ArrowUp":
+							case "Enter":
+							case " ":
+								e.preventDefault();
+								open();
+								break;
+						}
+					});
+
+					// Type-ahead buffer
+					var typeBuf = "";
+					var typeTimer = null;
+
+					menu.addEventListener("keydown", function (e) {
+						switch (e.key) {
+							case "ArrowDown":
+								e.preventDefault();
+								setActive((activeIdx + 1) % options.length);
+								break;
+							case "ArrowUp":
+								e.preventDefault();
+								setActive((activeIdx - 1 + options.length) % options.length);
+								break;
+							case "Home":
+								e.preventDefault();
+								setActive(0);
+								break;
+							case "End":
+								e.preventDefault();
+								setActive(options.length - 1);
+								break;
+							case "Enter":
+							case " ":
+								e.preventDefault();
+								setValue(options[activeIdx].value);
+								close(true);
+								break;
+							case "Escape":
+								e.preventDefault();
+								close(true);
+								break;
+							case "Tab":
+								close(false);
+								break;
+							default:
+								if (e.key.length === 1 && /\S/.test(e.key)) {
+									typeBuf += e.key.toLowerCase();
+									clearTimeout(typeTimer);
+									typeTimer = setTimeout(function () {
+										typeBuf = "";
+									}, 600);
+									var match = options.findIndex(function (o) {
+										return o.label.toLowerCase().startsWith(typeBuf);
+									});
+									if (match >= 0) setActive(match);
+								}
+						}
+					});
+
+					// When the menu opens, move focus into it so keyboard works
+					var observer = new MutationObserver(function () {
+						if (root.dataset.open === "true") menu.focus();
+					});
+					observer.observe(root, {
+						attributes: true,
+						attributeFilter: ["data-open"],
+					});
+
+					paintTrigger();
+				}
+
+				document.addEventListener("click", function (e) {
+					if (openDd && !openDd.contains(e.target)) openDd._close(false);
+				});
+				document.addEventListener("keydown", function (e) {
+					if (e.key === "Escape" && openDd) openDd._close(true);
+				});
+
+				document.querySelectorAll(".dd").forEach(initDropdown);
+			})();
+			var MSGS = {
+				success: [
+					"Changes saved!",
+					"Upload complete!",
+					"Profile updated!",
+					"Payment processed!",
+				],
+				error: [
+					"Connection lost",
+					"Failed to load",
+					"404 Not Found",
+					"Server error",
+				],
+				info: [
+					"New message",
+					"Update available",
+					"Meeting in 5 min",
+					"Syncing...",
+				],
+				warning: [
+					"Low storage",
+					"Session expiring",
+					"Weak password",
+					"Unsaved changes",
+				],
+			};
+			function rand(a) {
+				return a[Math.floor(Math.random() * a.length)];
+			}
+			function fire(t) {
+				toastr.options = {
+					progressBar: true,
+					animation: "fade",
+					closeButton: false,
+					positionClass: "toast-top-right",
+					timeOut: 5000,
+				};
+				toastr[t](rand(MSGS[t]));
+				bump();
+			}
+			function fireWithTitle() {
+				toastr.options = {
+					progressBar: true,
+					closeButton: true,
+					timeOut: 5000,
+				};
+				toastr.success(
+					"Your profile has been updated successfully.",
+					"Profile Saved",
+				);
+				bump();
+			}
+			function fireSticky() {
+				toastr.options = { timeOut: 0, closeButton: true, progressBar: false };
+				toastr.warning("This toast stays until you close it.", "Sticky!");
+				bump();
+			}
+			function fireProgress() {
+				toastr.options = { progressBar: true, timeOut: 6000 };
+				toastr.info("Watch the progress bar count down...", "Progress");
+				bump();
+			}
+			function fireClose() {
+				toastr.options = {
+					closeButton: true,
+					progressBar: true,
+					timeOut: 8000,
+				};
+				toastr.success("Click × or press Escape to dismiss", "Close button");
+				bump();
+			}
+			function fireHtml() {
+				toastr.options = {
+					progressBar: true,
+					closeButton: true,
+					timeOut: 6000,
+				};
+				toastr.info(
+					'<strong>Bold</strong> with a <a href="#" onclick="return false" style="color:#a8d4ff">link</a>!',
+					"HTML support",
+				);
+				bump();
+			}
+			async function firePromise() {
+				toastr.options = { timeOut: 3000, progressBar: true };
+				var t = toastr.info("Waiting for you to dismiss...", "Promise API");
+				bump();
+				await t.onDismissed;
+				toastr.options = { timeOut: 4000, progressBar: true };
+				toastr.success("Promise resolved after dismiss!", "onDismissed ✓");
+				bump();
+			}
+			function fireStack() {
+				toastr.options = {
+					progressBar: true,
+					newestOnTop: true,
+					timeOut: 4000,
+				};
+				var types = ["success", "error", "info", "warning"],
+					msgs = [
+						"Upload complete",
+						"Connection lost",
+						"New comment",
+						"Low storage",
+					];
+				types.forEach(function (t, i) {
+					setTimeout(function () {
+						toastr[t](msgs[i]);
+						bump();
+					}, i * 200);
+				});
+			}
+			function fireAnim(a) {
+				toastr.options = { animation: a, progressBar: true, timeOut: 4000 };
+				var l = {
+					fade: "Fade animation",
+					slide: "Slide animation",
+					bounce: "Bounce animation",
+					flip: "Flip animation",
+				};
+				toastr.success("Watch the enter and exit!", l[a]);
+				bump();
+			}
+			function firePlayground() {
+				var type = document.getElementById("pg-type").dataset.value,
+					anim = document.getElementById("pg-anim").dataset.value,
+					pos = document.getElementById("pg-pos").dataset.value,
+					timeout =
+						parseInt(document.getElementById("pg-timeout").value, 10) || 0,
+					title = document.getElementById("pg-title").value || undefined,
+					msg =
+						document.getElementById("pg-msg").value || "Custom notification!";
+				toastr.options = {
+					animation: anim,
+					positionClass: pos,
+					timeOut: timeout,
+					closeButton: document.getElementById("pg-close").checked,
+					progressBar: document.getElementById("pg-progress").checked,
+					newestOnTop: document.getElementById("pg-newest").checked,
+					preventDuplicates: document.getElementById("pg-dup").checked,
+					rtl: document.getElementById("pg-rtl").checked,
+				};
+				toastr[type](msg, title);
+				bump();
+			}
+			function showTab(idx, el) {
+				[0, 1, 2].forEach(function (i) {
+					var e = document.getElementById("tab-" + i);
+					if (e) e.style.display = i === idx ? "" : "none";
+				});
+				document.querySelectorAll(".code-tab").forEach(function (t) {
+					t.classList.remove("active");
+				});
+				el.classList.add("active");
+			}
+			function copyInstall() {
+				navigator.clipboard &&
+					navigator.clipboard
+						.writeText("npm install toastr-next")
+						.then(function () {
+							var b = document.getElementById("copyBtn");
+							b.textContent = "✓ copied";
+							b.style.background = "#2d6a4f";
+							b.style.color = "#fff";
+							setTimeout(function () {
+								b.textContent = "copy";
+								b.style.background = "";
+								b.style.color = "";
+							}, 2000);
+						});
+			}
+			window.addEventListener("DOMContentLoaded", function () {
+				setTimeout(function () {
+					toastr.options = {
+						animation: "bounce",
+						progressBar: true,
+						timeOut: 5000,
+						closeButton: true,
+					};
+					toastr.success(
+						"No jQuery. No bloat. Just toasts. 🍞",
+						"toastr-next v3.0.0",
+					);
+					bump();
+				}, 600);
+			});
+		</script>
+	</body>
+</html>
