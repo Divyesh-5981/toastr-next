@@ -1,6 +1,6 @@
 {
   "name": "toastr-next",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Zero-dependency toast notifications. TypeScript rewrite of toastr 2.x — CSS animations, dark mode, Promise API, fully accessible.",
   "type": "module",
   "main": "./dist/toastr-next.cjs.js",
