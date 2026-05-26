@@ -47,10 +47,10 @@
     "accessible",
     "dark-mode"
   ],
-  "homepage": "https://github.com/CodeSeven/toastr",
+  "homepage": "https://github.com/Divyesh-5981/toastr-next",
   "repository": {
     "type": "git",
-    "url": "git://github.com/CodeSeven/toastr.git"
+    "url": "https://github.com/Divyesh-5981/toastr-next"
   },
   "license": "MIT",
   "devDependencies": {
