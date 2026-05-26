@@ -1,5 +1,11 @@
 import "./toastr.css";
-import type { ToastType, ToastrOptions, ToastResponse } from "./types";
+import type {
+	ToastType,
+	ToastrOptions,
+	ToastResponse,
+	ToastEvent,
+	ToastState,
+} from "./types";
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
@@ -20,11 +26,19 @@ const DEFAULTS: BaseToastrOptions = {
 	positionClass: "toast-top-right",
 	animation: "fade",
 	allowHtml: false,
-	escapeHtml: false,
 	rtl: false,
 	target: "body",
 	closeHtml: '<button type="button" aria-label="Close notification">×</button>',
 };
+
+// ─── Subscribers ──────────────────────────────────────────────────────────────
+
+type SubscriberCallback = (event: ToastEvent) => void;
+const subscribers = new Set<SubscriberCallback>();
+
+function emit(event: ToastEvent): void {
+	subscribers.forEach((cb) => cb(event));
+}
 
 // ─── Core ─────────────────────────────────────────────────────────────────────
 
@@ -143,17 +157,6 @@ function notify(
 		resolveDismiss = r;
 	});
 
-	const response: ToastResponse = {
-		toastId: id,
-		type,
-		message,
-		title,
-		state: "visible",
-		startTime: new Date(),
-		options,
-		onDismissed: dismissPromise,
-	};
-
 	// ── Timers & progress ──────────────────────────────────────────────────────
 
 	let hideTimer: ReturnType<typeof setTimeout> | null = null;
@@ -220,6 +223,7 @@ function notify(
 		response.state = "hidden";
 		response.endTime = new Date();
 		if (options.onHidden) options.onHidden();
+		emit({ toastId: id, type, message, title, state: "hidden" as ToastState });
 		resolveDismiss();
 		if (container && container.children.length === 0) {
 			container.remove();
@@ -240,22 +244,50 @@ function notify(
 	}
 
 	if (closeEl) {
-		closeEl.addEventListener("click", (e) => {
-			e.stopPropagation();
-			if (options.onCloseClick) options.onCloseClick(e as MouseEvent);
-			hideToast(true);
-		});
+		closeEl.addEventListener(
+			"click",
+			(e) => {
+				e.stopPropagation();
+				if (options.onCloseClick) options.onCloseClick(e as MouseEvent);
+				hideToast(true);
+			},
+			{ once: true },
+		);
 	}
 
 	if (!options.onclick && options.tapToDismiss) {
-		toast.addEventListener("click", () => hideToast(true));
+		toast.addEventListener(
+			"click",
+			() => {
+				emit({
+					toastId: id,
+					type,
+					message,
+					title,
+					state: "clicked" as ToastState,
+				});
+				hideToast(true);
+			},
+			{ once: true },
+		);
 	}
 
 	if (options.onclick) {
-		toast.addEventListener("click", (e) => {
-			options.onclick!(e as MouseEvent);
-			hideToast(true);
-		});
+		toast.addEventListener(
+			"click",
+			(e) => {
+				emit({
+					toastId: id,
+					type,
+					message,
+					title,
+					state: "clicked" as ToastState,
+				});
+				options.onclick!(e as MouseEvent);
+				hideToast(true);
+			},
+			{ once: true },
+		);
 	}
 
 	toast.setAttribute("tabindex", "0");
@@ -266,7 +298,37 @@ function notify(
 	// ── Start ──────────────────────────────────────────────────────────────────
 
 	startHideTimer(options.timeOut);
-	if (options.onShown) setTimeout(options.onShown, 300);
+
+	const animations = toast.getAnimations();
+	if (animations.length > 0) {
+		Promise.all(animations.map((anim) => anim.finished)).then(() => {
+			if (options.onShown) options.onShown();
+			emit({ toastId: id, type, message, title, state: "shown" as ToastState });
+		});
+	} else {
+		// Fallback if no animations
+		if (options.onShown) options.onShown();
+		emit({ toastId: id, type, message, title, state: "shown" as ToastState });
+	}
+
+	// ── Build response (implements ToastInstance) ──────────────────────────────
+
+	const response: ToastResponse = {
+		toastId: id,
+		type,
+		message,
+		title,
+		state: "visible",
+		startTime: new Date(),
+		options,
+		dismissed: dismissPromise,
+		remove() {
+			removeToast();
+		},
+		clear() {
+			hideToast(true);
+		},
+	};
 
 	return response;
 }
@@ -323,6 +385,15 @@ export const toastr = {
 			(child as HTMLElement).classList.add("toast-hiding");
 		});
 		setTimeout(() => toastr.remove(), 800);
+	},
+
+	/**
+	 * Subscribe to toast lifecycle events.
+	 * @returns An unsubscribe function.
+	 */
+	subscribe(callback: SubscriberCallback): () => void {
+		subscribers.add(callback);
+		return () => subscribers.delete(callback);
 	},
 
 	version: "3.0.0",

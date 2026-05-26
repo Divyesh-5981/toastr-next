@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/toastr-next.svg)](https://www.npmjs.com/package/toastr-next)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](#)
-[![Tests](https://img.shields.io/badge/tests-33%20passing-brightgreen.svg)](#)
+[![Tests](https://img.shields.io/badge/tests-31%20passing-brightgreen.svg)](#)
 [![Bundle Size](https://img.shields.io/badge/deps-zero-blue.svg)](#)
 
 A TypeScript rewrite of [toastr 2.x](https://github.com/CodeSeven/toastr) — zero dependencies, fully typed, promise-based API, dark mode, and CSS animation presets.
@@ -12,16 +12,16 @@ A TypeScript rewrite of [toastr 2.x](https://github.com/CodeSeven/toastr) — ze
 
 ## Why toastr-next?
 
-| Feature | toastr 2.x | toastr-next 3.x |
-|---|---|---|
-| Dependencies | jQuery required | **Zero** |
-| TypeScript | No | **First-class** |
-| Animations | jQuery animate + easing | **CSS `@keyframes`** |
-| Dark mode | Manual CSS | **`prefers-color-scheme` + `data-theme`** |
-| Accessibility | Partial | **Full (ARIA, keyboard)** |
-| Return value | jQuery object | **`Promise<ToastInstance>`** |
-| React | Third-party | **Built-in hook + provider** |
-| Bundle formats | UMD only | **ESM, CJS, UMD, IIFE** |
+| Feature        | toastr 2.x              | toastr-next 3.x                                |
+| -------------- | ----------------------- | ---------------------------------------------- |
+| Dependencies   | jQuery required         | **Zero**                                       |
+| TypeScript     | No                      | **First-class**                                |
+| Animations     | jQuery animate + easing | **CSS `@keyframes`**                           |
+| Dark mode      | Manual CSS              | **`prefers-color-scheme` + `data-theme`**      |
+| Accessibility  | Partial                 | **Full (ARIA, keyboard)**                      |
+| Return value   | jQuery object           | **`ToastInstance` (with `dismissed` Promise)** |
+| React          | Third-party             | **Built-in hook + provider**                   |
+| Bundle formats | UMD only                | **ESM, CJS, UMD, IIFE**                        |
 
 ---
 
@@ -46,49 +46,49 @@ pnpm add toastr-next
 ### Vanilla / TypeScript
 
 ```typescript
-import { toastr } from 'toastr-next';
-import 'toastr-next/style';
+import { toastr } from "toastr-next";
+import "toastr-next/style";
 
 // Fire and forget
-toastr.success('Saved!');
-toastr.error('Something went wrong', 'Error');
-toastr.warning('Low disk space', 'Warning');
-toastr.info('Update available');
+toastr.success("Saved!");
+toastr.error("Something went wrong", "Error");
+toastr.warning("Low disk space", "Warning");
+toastr.info("Update available");
 
-// Await the instance, then wait until it is dismissed
-const instance = await toastr.info('Loading…');
+// Wait until the toast is dismissed
+const instance = toastr.info("Loading…");
 await instance.dismissed;
-console.log('toast closed');
+console.log("toast closed");
 ```
 
 ### React
 
 ```tsx
-import { ToastrProvider, useToastr } from 'toastr-next/react';
+import { ToastrProvider, useToastr } from "toastr-next/react";
 
 // 1. Wrap your app once
 function App() {
-  return (
-    <ToastrProvider options={{ positionClass: 'toast-top-right' }}>
-      <YourApp />
-    </ToastrProvider>
-  );
+	return (
+		<ToastrProvider options={{ positionClass: "toast-top-right" }}>
+			<YourApp />
+		</ToastrProvider>
+	);
 }
 
 // 2. Use the hook anywhere inside the tree
 function SaveButton() {
-  const { success, error } = useToastr({ positionClass: 'toast-bottom-right' });
+	const { success, error } = useToastr({ positionClass: "toast-bottom-right" });
 
-  async function handleSave() {
-    try {
-      await save();
-      success('Saved!');
-    } catch (e) {
-      error('Save failed', 'Error');
-    }
-  }
+	async function handleSave() {
+		try {
+			await save();
+			success("Saved!");
+		} catch (e) {
+			error("Save failed", "Error");
+		}
+	}
 
-  return <button onClick={handleSave}>Save</button>;
+	return <button onClick={handleSave}>Save</button>;
 }
 ```
 
@@ -100,36 +100,31 @@ All options can be set globally on `toastr.options` or passed per-call as the th
 
 ```typescript
 toastr.options.timeOut = 3000;
-toastr.success('Hello', 'Title', { closeButton: true, animation: 'slide' });
+toastr.success("Hello", "Title", { closeButton: true, animation: "slide" });
 ```
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `animation` | `'fade' \| 'slide' \| 'bounce' \| 'flip'` | `'fade'` | CSS `@keyframes` animation preset |
-| `closeButton` | `boolean` | `false` | Show a close button |
-| `closeHtml` | `string` | `'<button>…</button>'` | Custom close button HTML |
-| `debug` | `boolean` | `false` | Log debug info to the console |
-| `escapeHtml` | `boolean` | `false` | Escape HTML in title and message |
-| `extendedTimeOut` | `number` | `1000` | Ms to keep toast open after hover |
-| `hideDuration` | `number` | `1000` | Ms for the hide animation |
-| `messageClass` | `string` | `'toast-message'` | CSS class for the message element |
-| `newestOnTop` | `boolean` | `true` | Stack newest toasts on top |
-| `onCloseClick` | `() => void` | — | Callback when close button clicked |
-| `onHidden` | `() => void` | — | Callback after toast is hidden |
-| `onShown` | `() => void` | — | Callback after toast is shown |
-| `onclick` | `() => void` | — | Callback when toast body is clicked |
-| `positionClass` | `string` | `'toast-top-right'` | Container position class |
-| `preventDuplicates` | `boolean` | `false` | Suppress duplicate messages |
-| `progressBar` | `boolean` | `false` | Show a progress bar |
-| `rtl` | `boolean` | `false` | Right-to-left layout |
-| `showDuration` | `number` | `300` | Ms for the show animation |
-| `tapToDismiss` | `boolean` | `true` | Click toast body to dismiss |
-| `target` | `string` | `'body'` | CSS selector for the container parent |
-| `timeOut` | `number` | `5000` | Ms before auto-dismiss (0 = sticky) |
-| `titleClass` | `string` | `'toast-title'` | CSS class for the title element |
-| `toastClass` | `string` | `'toast'` | CSS class for each toast element |
+| Option              | Type                                      | Default                | Description                                                      |
+| ------------------- | ----------------------------------------- | ---------------------- | ---------------------------------------------------------------- |
+| `allowHtml`         | `boolean`                                 | `false`                | Render HTML in title and message (use with trusted content only) |
+| `animation`         | `'fade' \| 'slide' \| 'bounce' \| 'flip'` | `'fade'`               | CSS `@keyframes` animation preset                                |
+| `closeButton`       | `boolean`                                 | `false`                | Show a close button                                              |
+| `closeHtml`         | `string`                                  | `'<button>…</button>'` | Custom close button HTML                                         |
+| `closeOnHover`      | `boolean`                                 | `true`                 | Pause countdown while hovering                                   |
+| `extendedTimeOut`   | `number`                                  | `1000`                 | Ms to keep toast open after hover                                |
+| `newestOnTop`       | `boolean`                                 | `true`                 | Stack newest toasts on top                                       |
+| `onCloseClick`      | `(e: MouseEvent) => void`                 | —                      | Callback when close button clicked                               |
+| `onHidden`          | `() => void`                              | —                      | Callback after toast is hidden                                   |
+| `onShown`           | `() => void`                              | —                      | Callback after toast is shown                                    |
+| `onclick`           | `(e: MouseEvent) => void`                 | —                      | Callback when toast body is clicked                              |
+| `positionClass`     | `string`                                  | `'toast-top-right'`    | Container position class                                         |
+| `preventDuplicates` | `boolean`                                 | `false`                | Suppress duplicate messages                                      |
+| `progressBar`       | `boolean`                                 | `false`                | Show a progress bar                                              |
+| `rtl`               | `boolean`                                 | `false`                | Right-to-left layout                                             |
+| `tapToDismiss`      | `boolean`                                 | `true`                 | Click toast body to dismiss                                      |
+| `target`            | `string`                                  | `'body'`               | CSS selector for the container parent                            |
+| `timeOut`           | `number`                                  | `5000`                 | Ms before auto-dismiss (0 = sticky)                              |
 
-> **Removed from 2.x:** `showMethod`, `hideMethod`, `closeMethod`, `showEasing`, `hideEasing`, `closeEasing`. Use `animation` instead.
+> **Removed from 2.x:** `showMethod`, `hideMethod`, `closeMethod`, `showEasing`, `hideEasing`, `closeEasing`, `escapeHtml`. Use `animation` for animations and `allowHtml` for HTML content control.
 
 ---
 
@@ -138,10 +133,10 @@ toastr.success('Hello', 'Title', { closeButton: true, animation: 'slide' });
 Four built-in CSS `@keyframes` presets — no jQuery, no easing plugin required.
 
 ```typescript
-toastr.success('Saved!', '', { animation: 'fade' });   // default
-toastr.info('Note', '', { animation: 'slide' });
-toastr.warning('Heads up', '', { animation: 'bounce' });
-toastr.error('Failed', '', { animation: 'flip' });
+toastr.success("Saved!", "", { animation: "fade" }); // default
+toastr.info("Note", "", { animation: "slide" });
+toastr.warning("Heads up", "", { animation: "bounce" });
+toastr.error("Failed", "", { animation: "flip" });
 ```
 
 ---
@@ -153,9 +148,9 @@ Dark styles are applied automatically via `prefers-color-scheme: dark`. You can 
 ```html
 <!-- Force dark mode -->
 <html data-theme="dark">
-
-<!-- Force light mode -->
-<html data-theme="light">
+	<!-- Force light mode -->
+	<html data-theme="light"></html>
+</html>
 ```
 
 ---
@@ -172,27 +167,27 @@ Dark styles are applied automatically via `prefers-color-scheme: dark`. You can 
 
 ## Promise API
 
-Every `toastr.*()` call returns a `Promise<ToastInstance>`.
+Every `toastr.*()` call returns a `ToastInstance` synchronously.
 
 ```typescript
 interface ToastInstance {
-  /** Resolves when the toast has finished its dismiss animation. */
-  dismissed: Promise<void>;
-  /** Programmatically remove the toast immediately. */
-  remove(): void;
-  /** Trigger the dismiss animation then remove. */
-  clear(): void;
+	/** Resolves when the toast has finished its dismiss animation. */
+	dismissed: Promise<void>;
+	/** Programmatically remove the toast immediately (no animation). */
+	remove(): void;
+	/** Trigger the dismiss animation then remove. */
+	clear(): void;
 }
 ```
 
 ```typescript
 // Wait until the user dismisses the toast before proceeding
-const toast = await toastr.success('File uploaded');
+const toast = toastr.success("File uploaded");
 await toast.dismissed;
 navigateAway();
 
 // Or dismiss programmatically
-const toast = await toastr.info('Processing…', '', { timeOut: 0 });
+const toast = toastr.info("Processing…", "", { timeOut: 0 });
 await doWork();
 toast.clear();
 ```
@@ -208,9 +203,10 @@ toastr.remove();
 // Dismiss all toasts with animation
 toastr.clear();
 
-// Subscribe to all toast events; returns an unsubscribe function
-const unsubscribe = toastr.subscribe((toast) => {
-  console.log(toast.state); // 'shown' | 'hidden' | 'clicked'
+// Subscribe to all toast lifecycle events; returns an unsubscribe function
+const unsubscribe = toastr.subscribe((event) => {
+	console.log(event.state); // 'shown' | 'hidden' | 'clicked'
+	console.log(event.type); // 'success' | 'error' | 'info' | 'warning'
 });
 
 // Stop listening
@@ -225,7 +221,7 @@ unsubscribe();
 toastr.options.timeOut = 0;
 toastr.options.extendedTimeOut = 0;
 
-toastr.warning('This will not go away on its own.', 'Action required');
+toastr.warning("This will not go away on its own.", "Action required");
 ```
 
 ---
@@ -248,10 +244,13 @@ toast-bottom-full-width
 ## CDN / UMD
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr-next@3/dist/toastr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/toastr-next@3/dist/toastr.umd.min.js"></script>
+<link
+	rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/toastr-next@3/dist/toastr-next.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/toastr-next@3/dist/toastr-next.iife.js"></script>
 <script>
-  toastr.success('Hello from CDN!');
+	toastr.success("Hello from CDN!");
 </script>
 ```
 
@@ -259,12 +258,12 @@ toast-bottom-full-width
 
 ## Bundle Formats
 
-| Format | Path | Use case |
-|---|---|---|
-| ESM | `dist/toastr.esm.js` | Bundlers (Vite, Webpack, Rollup) |
-| CJS | `dist/toastr.cjs.js` | Node.js / CommonJS |
-| UMD | `dist/toastr.umd.js` | Legacy bundlers |
-| IIFE | `dist/toastr.iife.js` | `<script>` tag, CDN |
+| Format | Path                       | Use case                         |
+| ------ | -------------------------- | -------------------------------- |
+| ESM    | `dist/toastr-next.es.js`   | Bundlers (Vite, Webpack, Rollup) |
+| CJS    | `dist/toastr-next.cjs.js`  | Node.js / CommonJS               |
+| UMD    | `dist/toastr-next.umd.js`  | Legacy bundlers                  |
+| IIFE   | `dist/toastr-next.iife.js` | `<script>` tag, CDN              |
 
 ---
 
@@ -317,12 +316,12 @@ The `showMethod`, `hideMethod`, `closeMethod`, `showEasing`, `hideEasing`, and `
 
 ### 5. Handle the new return type
 
-`toastr.success()` (and all variants) now return `Promise<ToastInstance>` instead of a jQuery object:
+`toastr.success()` (and all variants) now return a `ToastInstance` synchronously instead of a jQuery object:
 
 ```diff
 - const $toast = toastr.success('Saved!');
 - $toast.css('color', 'red'); // jQuery DOM manipulation
-+ const instance = await toastr.success('Saved!');
++ const instance = toastr.success('Saved!');
 + await instance.dismissed;  // wait for it to close
 ```
 
@@ -330,9 +329,21 @@ The `showMethod`, `hideMethod`, `closeMethod`, `showEasing`, `hideEasing`, and `
 
 ```typescript
 // Block until the user closes the toast
-const instance = await toastr.warning('Are you sure?', '', { timeOut: 0, closeButton: true });
+const instance = toastr.warning("Are you sure?", "", {
+	timeOut: 0,
+	closeButton: true,
+});
 await instance.dismissed;
 proceed();
+```
+
+### 7. Replace `escapeHtml` with `allowHtml`
+
+HTML is **escaped by default** (secure). To render HTML content, opt in explicitly:
+
+```diff
+- toastr.success('<b>Bold</b>', '', { escapeHtml: false });
++ toastr.success('<b>Bold</b>', '', { allowHtml: true });
 ```
 
 ---
@@ -343,13 +354,13 @@ proceed();
 # Install dependencies
 npm install
 
-# Run tests (33 Vitest tests)
+# Run tests (31 Vitest tests)
 npm test
 
 # Watch mode
 npm run test:watch
 
-# Build all bundles
+# Build all bundles + type declarations
 npm run build
 ```
 

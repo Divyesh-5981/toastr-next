@@ -24,6 +24,7 @@ export function useToastr(defaults?: ToastrOptions): {
 		options?: ToastrOptions,
 	) => ToastResponse;
 	clear: () => void;
+	remove: () => void;
 } {
 	const defaultsRef = useRef(defaults);
 	useEffect(() => {
@@ -55,6 +56,7 @@ export function useToastr(defaults?: ToastrOptions): {
 	);
 
 	const clear = useCallback(() => toastr.clear(), []);
+	const remove = useCallback(() => toastr.remove(), []);
 
-	return { success, info, warning, error, clear };
+	return { success, info, warning, error, clear, remove };
 }

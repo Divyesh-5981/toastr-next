@@ -12,6 +12,8 @@ export type ToastPosition =
 
 export type AnimationType = "fade" | "slide" | "bounce" | "flip";
 
+export type ToastState = "shown" | "hidden" | "clicked";
+
 export interface ToastrOptions {
 	/** Auto-dismiss after N ms. Set 0 for sticky. @default 5000 */
 	timeOut?: number;
@@ -38,10 +40,6 @@ export interface ToastrOptions {
 	 * @default false (secure textContent by default)
 	 */
 	allowHtml?: boolean;
-	/**
-	 * @deprecated use allowHtml (defaults to false, enforcing strict text content)
-	 */
-	escapeHtml?: boolean;
 	/** Right-to-left mode. @default false */
 	rtl?: boolean;
 	/** DOM target to append container. @default 'body' */
@@ -58,7 +56,18 @@ export interface ToastrOptions {
 	onCloseClick?: (event: MouseEvent) => void;
 }
 
-export interface ToastResponse {
+/** Returned by every toastr.*() call. */
+export interface ToastInstance {
+	/** Resolves when the toast has finished its dismiss animation. */
+	dismissed: Promise<void>;
+	/** Programmatically remove the toast immediately (no animation). */
+	remove(): void;
+	/** Trigger the dismiss animation then remove. */
+	clear(): void;
+}
+
+/** @internal Full response object — superset of ToastInstance. */
+export interface ToastResponse extends ToastInstance {
 	toastId: number;
 	type: ToastType;
 	message: string;
@@ -67,6 +76,13 @@ export interface ToastResponse {
 	startTime: Date;
 	endTime?: Date;
 	options: ToastrOptions;
-	/** Resolves when the toast is dismissed */
-	onDismissed: Promise<void>;
+}
+
+/** Payload passed to toastr.subscribe() callbacks. */
+export interface ToastEvent {
+	toastId: number;
+	type: ToastType;
+	message: string;
+	title?: string;
+	state: ToastState;
 }
