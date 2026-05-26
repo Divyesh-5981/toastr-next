@@ -27,8 +27,9 @@
 				--radius: 12px;
 				--font: system-ui, -apple-system, "Segoe UI", sans-serif;
 			}
+			/* Auto light mode — follows OS preference */
 			@media (prefers-color-scheme: light) {
-				:root {
+				:root:not([data-theme="dark"]) {
 					--bg: #f5f5fb;
 					--surface: #fff;
 					--surface2: #ebebf5;
@@ -37,42 +38,105 @@
 					--muted: #666688;
 					--accent: #5b50d6;
 				}
-				.control-group select {
+				:root:not([data-theme="dark"]) .control-group select {
 					background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666688' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
 				}
-				.control-group select:focus,
-				.control-group input:focus {
+				:root:not([data-theme="dark"]) .control-group select:focus,
+				:root:not([data-theme="dark"]) .control-group input:focus {
 					box-shadow: 0 0 0 3px rgba(91, 80, 214, 0.15);
 				}
-				pre {
+				:root:not([data-theme="dark"]) pre {
 					background: #f2f2fa;
 				}
-				.kw {
+				:root:not([data-theme="dark"]) .kw {
 					color: #7c3aed;
 				}
-				.fn {
+				:root:not([data-theme="dark"]) .fn {
 					color: #1d4ed8;
 				}
-				.str {
+				:root:not([data-theme="dark"]) .str {
 					color: #15803d;
 				}
-				.cmt {
+				:root:not([data-theme="dark"]) .cmt {
 					color: #64748b;
 					font-style: italic;
 				}
-				.num {
+				:root:not([data-theme="dark"]) .num {
 					color: #c2410c;
 				}
-				.badge-purple {
+				:root:not([data-theme="dark"]) .badge-purple {
 					background: rgba(91, 80, 214, 0.1);
 					border-color: rgba(91, 80, 214, 0.25);
 					color: #5b50d6;
 				}
-				.badge-green {
+				:root:not([data-theme="dark"]) .badge-green {
 					background: rgba(21, 128, 61, 0.1);
 					border-color: rgba(21, 128, 61, 0.25);
 					color: #15803d;
 				}
+			}
+
+			/* Forced light mode via data-theme="light" */
+			[data-theme="light"] {
+				--bg: #f5f5fb;
+				--surface: #fff;
+				--surface2: #ebebf5;
+				--border: rgba(0, 0, 0, 0.12);
+				--text: #1a1a2e;
+				--muted: #666688;
+				--accent: #5b50d6;
+			}
+			[data-theme="light"] .control-group select {
+				background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666688' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+			}
+			[data-theme="light"] .control-group select:focus,
+			[data-theme="light"] .control-group input:focus {
+				box-shadow: 0 0 0 3px rgba(91, 80, 214, 0.15);
+			}
+			[data-theme="light"] pre {
+				background: #f2f2fa;
+			}
+			[data-theme="light"] .kw {
+				color: #7c3aed;
+			}
+			[data-theme="light"] .fn {
+				color: #1d4ed8;
+			}
+			[data-theme="light"] .str {
+				color: #15803d;
+			}
+			[data-theme="light"] .cmt {
+				color: #64748b;
+				font-style: italic;
+			}
+			[data-theme="light"] .num {
+				color: #c2410c;
+			}
+			[data-theme="light"] .badge-purple {
+				background: rgba(91, 80, 214, 0.1);
+				border-color: rgba(91, 80, 214, 0.25);
+				color: #5b50d6;
+			}
+			[data-theme="light"] .badge-green {
+				background: rgba(21, 128, 61, 0.1);
+				border-color: rgba(21, 128, 61, 0.25);
+				color: #15803d;
+			}
+
+			/* Forced dark mode via data-theme="dark" (overrides OS light preference) */
+			[data-theme="dark"] {
+				--bg: #0f0f13;
+				--surface: #18181f;
+				--surface2: #22222c;
+				--border: rgba(255, 255, 255, 0.08);
+				--text: #e8e8f0;
+				--muted: #8888a4;
+				--accent: #7c6af7;
+			}
+			[data-theme="dark"] .dd-menu {
+				box-shadow:
+					0 12px 32px -8px rgba(0, 0, 0, 0.5),
+					0 4px 12px -4px rgba(0, 0, 0, 0.3);
 			}
 			body {
 				font-family: var(--font);
@@ -532,10 +596,14 @@
 				box-shadow: 0 0 0 3px rgba(124, 106, 247, 0.18);
 			}
 			@media (prefers-color-scheme: light) {
-				.dd-trigger:focus-visible,
-				.dd[data-open="true"] .dd-trigger {
+				:root:not([data-theme="dark"]) .dd-trigger:focus-visible,
+				:root:not([data-theme="dark"]) .dd[data-open="true"] .dd-trigger {
 					box-shadow: 0 0 0 3px rgba(91, 80, 214, 0.15);
 				}
+			}
+			[data-theme="light"] .dd-trigger:focus-visible,
+			[data-theme="light"] .dd[data-open="true"] .dd-trigger {
+				box-shadow: 0 0 0 3px rgba(91, 80, 214, 0.15);
 			}
 			.dd-icon {
 				display: inline-flex;
@@ -612,11 +680,16 @@
 				outline: none;
 			}
 			@media (prefers-color-scheme: light) {
-				.dd-menu {
+				:root:not([data-theme="dark"]) .dd-menu {
 					box-shadow:
 						0 12px 32px -8px rgba(15, 15, 30, 0.18),
 						0 4px 12px -4px rgba(15, 15, 30, 0.1);
 				}
+			}
+			[data-theme="light"] .dd-menu {
+				box-shadow:
+					0 12px 32px -8px rgba(15, 15, 30, 0.18),
+					0 4px 12px -4px rgba(15, 15, 30, 0.1);
 			}
 			.dd[data-open="true"] .dd-menu {
 				opacity: 1;
@@ -686,9 +759,57 @@
 				font-weight: 700;
 				color: var(--accent);
 			}
+
+			/* ──────── Theme toggle ──────── */
+			#theme-toggle {
+				position: fixed;
+				top: 16px;
+				right: 16px;
+				z-index: 9999;
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				padding: 8px 14px;
+				border-radius: 999px;
+				border: 1px solid var(--border);
+				background: var(--surface);
+				color: var(--text);
+				font-family: var(--font);
+				font-size: 13px;
+				font-weight: 600;
+				cursor: pointer;
+				transition:
+					border-color 0.2s,
+					background 0.2s,
+					box-shadow 0.2s;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+				user-select: none;
+			}
+			#theme-toggle:hover {
+				border-color: var(--accent);
+				box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+			}
+			#theme-toggle:focus-visible {
+				outline: 2px solid var(--accent);
+				outline-offset: 2px;
+			}
+			#theme-toggle .theme-icon {
+				font-size: 15px;
+				line-height: 1;
+			}
 		</style>
 	</head>
 	<body>
+		<button
+			id="theme-toggle"
+			aria-label="Toggle color theme"
+			title="Toggle color theme"
+			onclick="cycleTheme()"
+		>
+			<span class="theme-icon" id="theme-icon">🌗</span>
+			<span id="theme-label">Auto</span>
+		</button>
+
 		<header>
 			<span class="hero-icon" aria-hidden="true">🍞</span>
 			<h1>toastr<span>-next</span></h1>
@@ -1502,6 +1623,40 @@ toastr.options.animation = <span class="str">'bounce'</span>;   <span class="cmt
 					bump();
 				}, 600);
 			});
+
+			/* ──────── Theme toggle ──────── */
+			var THEMES = [
+				{ value: "light", icon: "☀️", label: "Light" },
+				{ value: "dark", icon: "🌙", label: "Dark" },
+			];
+
+			function applyTheme(value) {
+				document.documentElement.setAttribute("data-theme", value);
+				var t = THEMES.find(function (t) {
+					return t.value === value;
+				});
+				document.getElementById("theme-icon").textContent = t.icon;
+				document.getElementById("theme-label").textContent = t.label;
+				document
+					.getElementById("theme-toggle")
+					.setAttribute(
+						"aria-label",
+						"Color theme: " + t.label + ". Click to change.",
+					);
+			}
+
+			function cycleTheme() {
+				var current = localStorage.getItem("toastr-theme") || "dark";
+				var idx = THEMES.findIndex(function (t) {
+					return t.value === current;
+				});
+				var next = THEMES[(idx + 1) % THEMES.length].value;
+				localStorage.setItem("toastr-theme", next);
+				applyTheme(next);
+			}
+
+			// Restore saved theme on load (default: dark)
+			applyTheme(localStorage.getItem("toastr-theme") || "dark");
 		</script>
 	</body>
 </html>
