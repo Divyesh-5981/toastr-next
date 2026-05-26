@@ -56,3 +56,5 @@ Thumbs.db
 # WebStorm #
 ######################
 .idea/
+# Compiled output
+dist/
