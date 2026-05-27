@@ -4,9 +4,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](#)
 [![Tests](https://img.shields.io/badge/tests-31%20passing-brightgreen.svg)](#)
-[![Bundle Size](https://img.shields.io/badge/deps-zero-blue.svg)](#)
+[![Bundle Size](https://img.shields.io/badge/bundle-~4KB%20gzipped-blue.svg)](#)
 
-A TypeScript rewrite of [toastr 2.x](https://github.com/CodeSeven/toastr) — zero dependencies, fully typed, promise-based API, dark mode, and CSS animation presets.
+A TypeScript rewrite of [toastr 2.x](https://github.com/CodeSeven/toastr) — zero dependencies, fully typed, promise-based API, dark mode, and CSS animation presets. **~4 KB gzipped** (JS 1.98 KB + CSS 2.00 KB).
 
 ---
 
@@ -39,6 +39,8 @@ yarn add toastr-next
 pnpm add toastr-next
 ```
 
+> **CSS is automatically injected** into the page when you import the library — no separate stylesheet import required.
+
 ---
 
 ## Quick Start
@@ -47,7 +49,8 @@ pnpm add toastr-next
 
 ```typescript
 import { toastr } from "toastr-next";
-import "toastr-next/style";
+
+// CSS is automatically injected — no separate import needed!
 
 // Fire and forget
 toastr.success("Saved!");
@@ -243,15 +246,22 @@ toast-bottom-full-width
 
 ## CDN / UMD
 
+No CSS import needed — styles are bundled into the JS. For CDN usage:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/toastr-next@3/dist/toastr-next.iife.js"></script>
+<script>
+	toastr.success("Hello from CDN!");
+</script>
+```
+
+If you prefer to manage CSS yourself (e.g. SSR or custom CSS pipelines), the stylesheet is still available separately:
+
 ```html
 <link
 	rel="stylesheet"
 	href="https://cdn.jsdelivr.net/npm/toastr-next@3/dist/toastr-next.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/toastr-next@3/dist/toastr-next.iife.js"></script>
-<script>
-	toastr.success("Hello from CDN!");
-</script>
 ```
 
 ---
@@ -288,7 +298,7 @@ toast-bottom-full-width
 - import toastr from 'toastr';
 - import 'toastr/build/toastr.min.css';
 + import { toastr } from 'toastr-next';
-+ import 'toastr-next/style';
++ // No CSS import needed — styles are auto-injected!
 ```
 
 ### 3. Replace animation options
