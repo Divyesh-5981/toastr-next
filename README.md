@@ -52,46 +52,103 @@ import { toastr } from "toastr-next";
 
 // CSS is automatically injected — no separate import needed!
 
-// Fire and forget
 toastr.success("Saved!");
 toastr.error("Something went wrong", "Error");
 toastr.warning("Low disk space", "Warning");
 toastr.info("Update available");
 
-// Wait until the toast is dismissed
-const instance = toastr.info("Loading…");
-await instance.dismissed;
-console.log("toast closed");
+// With options per call
+toastr.success("Done!", "Title", {
+	progressBar: true,
+	closeButton: true,
+	animation: "bounce",
+	positionClass: "toast-bottom-right",
+	timeOut: 4000,
+});
+
+// Global options — applies to all toasts
+toastr.options = {
+	positionClass: "toast-top-right",
+	progressBar: true,
+	closeButton: true,
+	animation: "bounce",
+};
+
+// Promise API — await dismissal
+const toast = toastr.success("Processing...");
+await toast.dismissed;
+console.log("toast was dismissed");
+
+// Programmatic control
+toast.clear(); // dismiss with animation
+toast.remove(); // remove instantly
 ```
 
-### React
+### React — `App.tsx`
 
 ```tsx
-import { ToastrProvider, useToastr } from "toastr-next/react";
+import { ToastrProvider } from "toastr-next/react";
+import { Home } from "./Home";
 
-// 1. Wrap your app once
-function App() {
+// ToastrProvider is self-closing — do NOT wrap children inside it
+export default function App() {
 	return (
-		<ToastrProvider options={{ positionClass: "toast-top-right" }}>
-			<YourApp />
-		</ToastrProvider>
+		<>
+			<ToastrProvider
+				position="toast-top-right"
+				options={{ progressBar: true, closeButton: true }}
+			/>
+			<Home />
+		</>
 	);
 }
+```
 
-// 2. Use the hook anywhere inside the tree
-function SaveButton() {
-	const { success, error } = useToastr({ positionClass: "toast-bottom-right" });
+### React — `Home.tsx`
+
+```tsx
+import { useToastr } from "toastr-next/react";
+
+export function Home() {
+	const toast = useToastr();
 
 	async function handleSave() {
 		try {
 			await save();
-			success("Saved!");
-		} catch (e) {
-			error("Save failed", "Error");
+			toast.success("Saved!", "Success");
+		} catch {
+			toast.error("Something went wrong", "Error");
 		}
 	}
 
-	return <button onClick={handleSave}>Save</button>;
+	return (
+		<div>
+			<button onClick={() => toast.success("Saved!")}>Success</button>
+			<button onClick={() => toast.error("Failed", "Error")}>Error</button>
+			<button onClick={() => toast.info("Hello!")}>Info</button>
+			<button onClick={() => toast.warning("Watch out!")}>Warning</button>
+			<button onClick={handleSave}>Save</button>
+		</div>
+	);
+}
+```
+
+### React — Promise API
+
+```tsx
+import { useToastr } from "toastr-next/react";
+
+export function UploadButton() {
+	const toast = useToastr();
+
+	async function handleUpload() {
+		const t = toast.info("Uploading...", "", { timeOut: 0, closeButton: true });
+		await uploadFile();
+		t.clear();
+		toast.success("Upload complete!");
+	}
+
+	return <button onClick={handleUpload}>Upload</button>;
 }
 ```
 
