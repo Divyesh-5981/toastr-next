@@ -6,7 +6,7 @@
 [![Tests](https://img.shields.io/badge/tests-31%20passing-brightgreen.svg)](#)
 [![Bundle Size](https://img.shields.io/badge/bundle-~4KB%20gzipped-blue.svg)](#)
 
-A TypeScript rewrite of [toastr 2.x](https://github.com/CodeSeven/toastr) — zero dependencies, fully typed, promise-based API, dark mode, and CSS animation presets. **~4 KB gzipped** (JS 1.98 KB + CSS 2.00 KB).
+A TypeScript rewrite of [toastr 2.x](https://github.com/CodeSeven/toastr) — zero dependencies, fully typed, promise-based API, dark mode, and CSS animation presets. **~4 KB gzipped** (JS 2.07 KB + CSS 2.02 KB).
 
 ---
 
@@ -43,113 +43,437 @@ pnpm add toastr-next
 
 ---
 
-## Quick Start
+## 💻 Code Samples
 
-### Vanilla / TypeScript
+Every snippet below is verified against the public API exported from `toastr-next` and `toastr-next/react`. Method signatures, option names, and return types map 1:1 to the current `src/`.
+
+### Full integration demos
+
+Three complete, copy-pasteable scenarios. Pick the one that matches your stack — each one is end-to-end (install → entry file → working notification) with nothing else required.
+
+---
+
+#### 1 · Bundler (Vite / Webpack / Rollup) — Vanilla TypeScript
+
+The bundler-friendly path. No special bundler configuration needed: `toastr-next` ships ESM and CJS entries, and the stylesheet is injected at runtime so you do not need a CSS loader to import `.css`.
+
+```bash
+npm install toastr-next
+```
+
+```html
+<!-- index.html -->
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>toastr-next demo</title>
+    </head>
+    <body>
+        <button id="save">Save</button>
+        <script type="module" src="/src/main.ts"></script>
+    </body>
+</html>
+```
+
+```typescript
+// src/main.ts
+import { toastr } from "toastr-next";
+// CSS is auto-injected on first import — no `import "toastr-next/style"` needed.
+
+toastr.options = {
+    positionClass: "toast-top-right",
+    progressBar: true,
+    closeButton: true,
+    timeOut: 4000,
+};
+
+document.getElementById("save")!.addEventListener("click", async () => {
+    const t = toastr.info("Saving…", "", { timeOut: 0 });
+    try {
+        await saveToServer();
+        t.clear();
+        await t.dismissed;
+        toastr.success("Saved!");
+    } catch {
+        t.clear();
+        toastr.error("Save failed");
+    }
+});
+
+async function saveToServer(): Promise<void> {
+    await new Promise((r) => setTimeout(r, 1200));
+}
+```
+
+Run with `npx vite`. The same `src/main.ts` works unchanged under Webpack, Rollup, Parcel, or esbuild — only the HTML entry / bundler config differs.
+
+> If you prefer to manage CSS yourself (SSR pipelines, CSS purging, etc.), import `toastr-next/style` once and the runtime injector becomes a no-op since the styles are already present.
+
+---
+
+#### 2 · Plain HTML via CDN — no build step
+
+The IIFE bundle defines `window.toastr` directly. Drop a single `<script>` into any HTML page and you are done.
+
+```html
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>toastr-next CDN demo</title>
+    </head>
+    <body>
+        <button id="ok">Show success</button>
+        <button id="err">Show error</button>
+
+        <!-- Loads the IIFE bundle and registers window.toastr. CSS is auto-injected. -->
+        <script src="https://cdn.jsdelivr.net/npm/toastr-next@3/dist/toastr-next.iife.js"></script>
+        <script>
+            toastr.options = {
+                positionClass: "toast-top-right",
+                progressBar: true,
+                closeButton: true,
+            };
+
+            document.getElementById("ok").addEventListener("click", () => {
+                toastr.success("Saved!", "Success");
+            });
+
+            document.getElementById("err").addEventListener("click", () => {
+                toastr.error("Something went wrong", "Error");
+            });
+        </script>
+    </body>
+</html>
+```
+
+- `toastr-next@3` tracks the latest 3.x patch; use `toastr-next@3.0.7` for an exact pin.
+- unpkg works too: `https://unpkg.com/toastr-next@3/dist/toastr-next.iife.js`.
+
+---
+
+#### 3 · React (Vite, Next.js client components, Remix, CRA)
+
+```bash
+npm install toastr-next
+# React 17+ is required as a peer dependency
+```
+
+```tsx
+// src/App.tsx
+import { ToastrProvider } from "toastr-next/react";
+import { SaveButton } from "./SaveButton";
+
+export default function App() {
+    return (
+        <>
+            <ToastrProvider
+                position="toast-top-right"
+                options={{ progressBar: true, closeButton: true, timeOut: 4000 }}
+            />
+            <main style={{ padding: 24 }}>
+                <h1>My app</h1>
+                <SaveButton />
+            </main>
+        </>
+    );
+}
+```
+
+```tsx
+// src/SaveButton.tsx
+import { useToastr } from "toastr-next/react";
+
+export function SaveButton() {
+    const toast = useToastr();
+
+    async function handleSave() {
+        const t = toast.info("Saving…", "", { timeOut: 0 });
+        try {
+            await saveToServer();
+            t.clear();
+            await t.dismissed;
+            toast.success("Saved!");
+        } catch {
+            t.clear();
+            toast.error("Save failed");
+        }
+    }
+
+    return <button onClick={handleSave}>Save</button>;
+}
+
+async function saveToServer(): Promise<void> {
+    await new Promise((r) => setTimeout(r, 1200));
+}
+```
+
+```tsx
+// src/main.tsx (Vite entry)
+import { createRoot } from "react-dom/client";
+import App from "./App";
+
+createRoot(document.getElementById("root")!).render(<App />);
+```
+
+The React adapter is a thin wrapper around vanilla `toastr` — no React context is used, so `useToastr` works with or without the Provider. Mount the Provider only when you want a single place to set global defaults.
+
+> **Next.js / Remix / any SSR framework:** `import` is safe on the server (the CSS injector and module-level code are SSR-safe), but **calling** `toast.*()` on the server will throw because the runtime calls `document.createElement`. Trigger toasts from client components / `"use client"` boundaries only.
+
+---
+
+### Vanilla JavaScript / TypeScript
+
+#### Basic toasts
 
 ```typescript
 import { toastr } from "toastr-next";
-
-// CSS is automatically injected — no separate import needed!
+// CSS is auto-injected on first import — no separate stylesheet needed.
 
 toastr.success("Saved!");
-toastr.error("Something went wrong", "Error");
-toastr.warning("Low disk space", "Warning");
+toastr.error("Something went wrong");
 toastr.info("Update available");
+toastr.warning("Low disk space");
 
-// With options per call
-toastr.success("Done!", "Title", {
-	progressBar: true,
-	closeButton: true,
-	animation: "bounce",
-	positionClass: "toast-bottom-right",
-	timeOut: 4000,
-});
-
-// Global options — applies to all toasts
-toastr.options = {
-	positionClass: "toast-top-right",
-	progressBar: true,
-	closeButton: true,
-	animation: "bounce",
-};
-
-// Promise API — await dismissal
-const toast = toastr.success("Processing...");
-await toast.dismissed;
-console.log("toast was dismissed");
-
-// Programmatic control
-toast.clear(); // dismiss with animation
-toast.remove(); // remove instantly
+// Optional title as the second argument
+toastr.success("Profile updated", "Saved");
 ```
 
-### React — `App.tsx`
+Each method signature: `(message: string, title?: string, options?: ToastrOptions) => ToastInstance`.
+
+#### Per-call options
+
+Pass an options object as the third argument. Per-call options override global defaults. See the [Options table](#options) for the full list.
+
+```typescript
+toastr.success("Upload complete", "Done", {
+    progressBar: true,
+    closeButton: true,
+    animation: "bounce",
+    positionClass: "toast-bottom-right",
+    timeOut: 4000,
+});
+```
+
+#### Global defaults
+
+Assigning to `toastr.options` **replaces** the defaults object (not merged). Set it once near your app entry, then override per call as needed.
+
+```typescript
+toastr.options = {
+    positionClass: "toast-top-right",
+    progressBar: true,
+    closeButton: true,
+    animation: "fade",
+    timeOut: 5000,
+};
+
+// You can also mutate a single key:
+toastr.options.timeOut = 3000;
+```
+
+#### Sticky toasts (no auto-dismiss)
+
+Set `timeOut: 0`. If `closeOnHover` is left at its default (`true`), also set `extendedTimeOut: 0`, otherwise the toast will dismiss `extendedTimeOut` ms after the pointer leaves.
+
+```typescript
+toastr.warning("Action required", "Confirm to proceed", {
+    timeOut: 0,
+    extendedTimeOut: 0,
+    closeButton: true,
+});
+```
+
+#### Await dismissal (Promise API)
+
+Each `toastr.*()` call returns a `ToastInstance` **synchronously**. `instance.dismissed` resolves after the toast's hide animation finishes (or immediately on browsers without the Web Animations API).
+
+```typescript
+const toast = toastr.info("Saving…", "", { timeOut: 0 });
+await saveToServer();
+toast.clear();         // trigger the dismiss animation
+await toast.dismissed; // wait until the toast is fully gone
+toastr.success("Saved!");
+```
+
+#### Programmatic control of a single toast
+
+```typescript
+const toast = toastr.info("Processing…");
+
+toast.clear();  // dismiss with animation
+toast.remove(); // remove from DOM immediately, no animation
+```
+
+#### Dismiss all toasts
+
+```typescript
+toastr.clear();  // animate every visible toast out
+toastr.remove(); // remove every toast immediately, no animation
+```
+
+#### Subscribe to lifecycle events
+
+`toastr.subscribe(callback)` returns an unsubscribe function. The callback fires for every state transition on every toast.
+
+```typescript
+const unsubscribe = toastr.subscribe((event) => {
+    // event.state: "shown" | "hidden" | "clicked"
+    // event.type:  "success" | "error" | "info" | "warning"
+    console.log(event.toastId, event.type, event.state, event.message);
+});
+
+// Later — stop listening
+unsubscribe();
+```
+
+#### Prevent duplicate messages
+
+When `preventDuplicates` is enabled, a second call with the same `message` while a copy is still on screen is suppressed. The returned `ToastInstance` is a safe no-op: `dismissed` resolves immediately and `clear()` / `remove()` are no-ops — so `await` and chaining still work without null checks.
+
+```typescript
+toastr.options.preventDuplicates = true;
+
+toastr.info("Loading…");
+const suppressed = toastr.info("Loading…"); // not rendered — duplicate
+await suppressed.dismissed;                  // resolves immediately
+```
+
+---
+
+### React
+
+Both exports live under the `toastr-next/react` entry point. The React adapter is a thin wrapper around the vanilla `toastr` — no React context is used, so the hook works with or without the Provider.
+
+#### Setup with `ToastrProvider`
+
+`<ToastrProvider />` is **self-closing**. It renders `null` and only configures the global `toastr.options`. Do not wrap children inside it.
 
 ```tsx
+// App.tsx
 import { ToastrProvider } from "toastr-next/react";
-import { Home } from "./Home";
 
-// ToastrProvider is self-closing — do NOT wrap children inside it
 export default function App() {
-	return (
-		<>
-			<ToastrProvider
-				position="toast-top-right"
-				options={{ progressBar: true, closeButton: true }}
-			/>
-			<Home />
-		</>
-	);
+    return (
+        <>
+            <ToastrProvider
+                position="toast-top-right"
+                options={{ progressBar: true, closeButton: true }}
+            />
+            <Routes />
+        </>
+    );
 }
 ```
 
-### React — `Home.tsx`
+Provider props (all optional):
+
+| Prop       | Type                          | Purpose                                                         |
+| ---------- | ----------------------------- | --------------------------------------------------------------- |
+| `position` | `ToastPosition`               | Shorthand for `options.positionClass` (default `toast-top-right`) |
+| `options`  | `ToastrOptions`               | Full options object applied as global defaults                   |
+| `onReady`  | `(t: typeof toastr) => void`  | Fired once after defaults are applied                            |
+
+#### Trigger toasts with `useToastr`
 
 ```tsx
+// Home.tsx
 import { useToastr } from "toastr-next/react";
 
 export function Home() {
-	const toast = useToastr();
+    const toast = useToastr();
 
-	async function handleSave() {
-		try {
-			await save();
-			toast.success("Saved!", "Success");
-		} catch {
-			toast.error("Something went wrong", "Error");
-		}
-	}
+    async function handleSave() {
+        try {
+            await save();
+            toast.success("Saved!", "Success");
+        } catch {
+            toast.error("Save failed", "Error");
+        }
+    }
 
-	return (
-		<div>
-			<button onClick={() => toast.success("Saved!")}>Success</button>
-			<button onClick={() => toast.error("Failed", "Error")}>Error</button>
-			<button onClick={() => toast.info("Hello!")}>Info</button>
-			<button onClick={() => toast.warning("Watch out!")}>Warning</button>
-			<button onClick={handleSave}>Save</button>
-		</div>
-	);
+    return (
+        <div>
+            <button onClick={() => toast.info("Hello!")}>Info</button>
+            <button onClick={() => toast.warning("Heads up")}>Warning</button>
+            <button onClick={handleSave}>Save</button>
+        </div>
+    );
 }
 ```
 
-### React — Promise API
+The hook returns `{ success, info, warning, error, clear, remove }`. Each method has the same signature as `toastr.success(...)` and returns a `ToastInstance`. `clear` and `remove` are the global versions — they dismiss every visible toast, not just ones triggered through this hook.
+
+#### Per-hook defaults
+
+Defaults passed to `useToastr` are merged into every call made through it. Per-call options still take precedence.
+
+```tsx
+const toast = useToastr({ closeButton: true, timeOut: 6000 });
+
+toast.info("Inherits closeButton + timeOut from the hook");
+toast.warning("Per-call override", "", { timeOut: 0 }); // sticky
+```
+
+#### Await dismissal in React
 
 ```tsx
 import { useToastr } from "toastr-next/react";
 
 export function UploadButton() {
-	const toast = useToastr();
+    const toast = useToastr();
 
-	async function handleUpload() {
-		const t = toast.info("Uploading...", "", { timeOut: 0, closeButton: true });
-		await uploadFile();
-		t.clear();
-		toast.success("Upload complete!");
-	}
+    async function handleUpload() {
+        const t = toast.info("Uploading…", "", { timeOut: 0, closeButton: true });
+        try {
+            await uploadFile();
+            t.clear();
+            await t.dismissed;
+            toast.success("Upload complete!");
+        } catch {
+            t.clear();
+            toast.error("Upload failed");
+        }
+    }
 
-	return <button onClick={handleUpload}>Upload</button>;
+    return <button onClick={handleUpload}>Upload</button>;
 }
+```
+
+#### Subscribing from React
+
+`useToastr` does not expose `subscribe`. Use the global `toastr.subscribe()` inside an effect and return the unsubscribe function for cleanup.
+
+```tsx
+import { useEffect } from "react";
+import { toastr } from "toastr-next";
+
+export function ToastLogger() {
+    useEffect(() => {
+        const unsubscribe = toastr.subscribe((e) => console.log(e));
+        return () => { unsubscribe(); };
+    }, []);
+    return null;
+}
+```
+
+---
+
+### TypeScript types
+
+All exported types are re-exported from the package entry:
+
+```typescript
+import type {
+    ToastrOptions,
+    ToastInstance,
+    ToastEvent,
+    ToastType,     // "success" | "error" | "info" | "warning"
+    ToastPosition, // 8 position-class string literals
+    AnimationType, // "fade" | "slide" | "bounce" | "flip"
+    ToastState,    // "shown" | "hidden" | "clicked"
+} from "toastr-next";
 ```
 
 ---
@@ -208,8 +532,12 @@ Dark styles are applied automatically via `prefers-color-scheme: dark`. You can 
 ```html
 <!-- Force dark mode -->
 <html data-theme="dark">
-	<!-- Force light mode -->
-	<html data-theme="light"></html>
+	...
+</html>
+
+<!-- Force light mode (overrides OS preference) -->
+<html data-theme="light">
+	...
 </html>
 ```
 
@@ -217,11 +545,11 @@ Dark styles are applied automatically via `prefers-color-scheme: dark`. You can 
 
 ## Accessibility
 
-- Toast containers use `role="alert"` and `aria-live="assertive"` (errors/warnings) or `aria-live="polite"` (info/success)
+- The toast container is a live region (`role="log"`, `aria-live="polite"`)
+- Each toast uses `role="alert"` + `aria-live="assertive"` (errors/warnings) or `role="status"` + `aria-live="polite"` (info/success), with `aria-atomic="true"`
 - Close buttons have a descriptive `aria-label`
-- **Keyboard support:**
-  - `Escape` dismisses the focused or most-recent toast
-  - `Tab` moves focus to the close button within a toast
+- Toasts are focusable (`tabindex="0"`) and participate in natural tab order, so users can Tab into a toast and Tab again to reach its close button
+- **Keyboard support:** pressing `Escape` while a toast is focused dismisses that toast
 
 ---
 
@@ -439,7 +767,7 @@ Pull requests are welcome. Please:
 
 - Pass all existing tests (`npm test`)
 - Add tests for new behaviour
-- Target the `develop` branch
+- Target the `main` branch
 
 ---
 

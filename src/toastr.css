@@ -152,6 +152,12 @@
   flex-direction: column-reverse;
 }
 
+#toast-container.toast-top-full-width .toast,
+#toast-container.toast-bottom-full-width .toast {
+  width: 100%;
+  max-width: 100%;
+}
+
 /* ─── Toast Base ─────────────────────────────────────────────────────────── */
 
 .toast {

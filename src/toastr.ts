@@ -52,6 +52,44 @@ function getOptions(
 	return { ...DEFAULTS, ...toastr.options, ...override };
 }
 
+/**
+ * Awaits all in-flight CSS animations on `el`. Resolves immediately when the
+ * Web Animations API is unavailable (e.g. jsdom, older browsers) or when no
+ * animation is running.
+ */
+function awaitAnimations(el: HTMLElement): Promise<void> {
+	const anims =
+		typeof el.getAnimations === "function" ? el.getAnimations() : [];
+	if (!anims.length) return Promise.resolve();
+	return Promise.all(anims.map((a) => a.finished)).then(() => undefined);
+}
+
+/**
+ * Build a stub ToastResponse for duplicates that were suppressed by
+ * `preventDuplicates`. Calling `clear()` / `remove()` on it is a no-op and
+ * `dismissed` resolves immediately, so callers can keep `await t.dismissed`
+ * patterns without null checks.
+ */
+function noOpResponse(
+	type: ToastType,
+	message: string,
+	title: string | undefined,
+	options: ToastrOptions,
+): ToastResponse {
+	return {
+		toastId: -1,
+		type,
+		message,
+		title,
+		state: "hidden",
+		startTime: new Date(),
+		options,
+		dismissed: Promise.resolve(),
+		remove() {},
+		clear() {},
+	};
+}
+
 function getContainer(options: ToastrOptions & BaseToastrOptions): HTMLElement {
 	if (container) return container;
 	container = document.createElement("div");
@@ -75,7 +113,7 @@ function notify(
 	const options = getOptions(optionsOverride);
 
 	if (options.preventDuplicates && activeMessages.has(message)) {
-		return null as unknown as ToastResponse;
+		return noOpResponse(type, message, title, options);
 	}
 	activeMessages.add(message);
 
@@ -199,19 +237,19 @@ function notify(
 		toast.classList.remove("toast-shown");
 		toast.classList.add("toast-hiding");
 
-		if (
-			typeof toast.getAnimations === "function" &&
-			toast.getAnimations().length
-		) {
-			Promise.all(toast.getAnimations().map((a) => a.finished))
-				.then(removeToast)
-				.catch(removeToast);
+		const anims =
+			typeof toast.getAnimations === "function" ? toast.getAnimations() : null;
+		if (anims && anims.length) {
+			Promise.all(anims.map((a) => a.finished)).then(removeToast, removeToast);
 		} else {
-			toast.addEventListener("animationend", function handler(e) {
+			// No Web Animations API, or animations not yet running — wait for the
+			// CSS animation to end, with a safety timeout in case it never fires.
+			const handler = (e: AnimationEvent) => {
 				if (e.target !== toast) return;
 				toast.removeEventListener("animationend", handler);
 				removeToast();
-			});
+			};
+			toast.addEventListener("animationend", handler);
 			setTimeout(removeToast, 500);
 		}
 	}
@@ -299,17 +337,10 @@ function notify(
 
 	startHideTimer(options.timeOut);
 
-	const animations = toast.getAnimations();
-	if (animations.length > 0) {
-		Promise.all(animations.map((anim) => anim.finished)).then(() => {
-			if (options.onShown) options.onShown();
-			emit({ toastId: id, type, message, title, state: "shown" as ToastState });
-		});
-	} else {
-		// Fallback if no animations
+	awaitAnimations(toast).then(() => {
 		if (options.onShown) options.onShown();
 		emit({ toastId: id, type, message, title, state: "shown" as ToastState });
-	}
+	});
 
 	// ── Build response (implements ToastInstance) ──────────────────────────────
 
@@ -396,7 +427,7 @@ export const toastr = {
 		return () => subscribers.delete(callback);
 	},
 
-	version: "3.0.0",
+	version: __PKG_VERSION__,
 };
 
 export default toastr;

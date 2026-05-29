@@ -1,54 +1,14 @@
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
+import { injectCssFromFile } from './vite-plugin-inject-css';
 
-/**
- * Reads the already-built CSS from disk and injects it into every JS chunk
- * so the React bundle is self-contained and doesn't rely on the consumer
- * importing toastr-next core first.
- */
-function injectCss(): Plugin {
-  return {
-    name: 'inject-css',
-    apply: 'build',
-    generateBundle(_, bundle) {
-      let cssContent = '';
-
-      // Try to read the CSS built by the main vite build
-      try {
-        cssContent = readFileSync(
-          resolve(__dirname, 'dist/toastr-next.css'),
-          'utf-8'
-        );
-      } catch {
-        // CSS not found — skip injection
-        return;
-      }
-
-      if (!cssContent) return;
-
-      const injector = `
-(function(){
-  if (typeof document === 'undefined') return;
-  var id = '__toastr_next_css__';
-  if (document.getElementById(id)) return;
-  var s = document.createElement('style');
-  s.id = id;
-  s.textContent = ${JSON.stringify(cssContent)};
-  document.head.appendChild(s);
-})();
-`.trim();
-
-      for (const chunk of Object.values(bundle)) {
-        if (chunk.type === 'chunk') {
-          chunk.code = injector + '\n' + chunk.code;
-        }
-      }
-    },
-  };
-}
+const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
 
 export default defineConfig({
+  define: {
+    __PKG_VERSION__: JSON.stringify(pkg.version),
+  },
   build: {
     lib: {
       entry: resolve(__dirname, 'src/react/index.ts'),
@@ -72,5 +32,5 @@ export default defineConfig({
     minify: 'esbuild',
     emptyOutDir: false,
   },
-  plugins: [injectCss()],
+  plugins: [injectCssFromFile(resolve(__dirname, 'dist/toastr-next.css'))],
 });

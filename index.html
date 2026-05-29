@@ -145,6 +145,175 @@
 				min-height: 100vh;
 				line-height: 1.6;
 			}
+
+			#bg-system {
+				position: fixed;
+				inset: 0;
+				z-index: -1;
+				overflow: hidden;
+				pointer-events: none;
+			}
+
+			#bg-noise {
+				position: absolute;
+				inset: 0;
+				z-index: 1;
+				background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+			}
+
+			#bg-aurora {
+				position: absolute;
+				inset: 0;
+				z-index: 2;
+			}
+			.aurora {
+				position: absolute;
+				inset: -20%;
+				will-change: transform;
+			}
+			.aurora-purple {
+				background: radial-gradient(
+					ellipse 45% 35% at 25% 22%,
+					rgba(124, 58, 237, 0.08),
+					transparent 60%
+				);
+				animation: drift-p 55s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+			}
+			.aurora-blue {
+				background: radial-gradient(
+					ellipse 40% 30% at 75% 55%,
+					rgba(59, 130, 246, 0.06),
+					transparent 60%
+				);
+				animation: drift-b 47s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+			}
+			.aurora-green {
+				background: radial-gradient(
+					ellipse 45% 30% at 28% 82%,
+					rgba(34, 197, 94, 0.05),
+					transparent 62%
+				);
+				animation: drift-g 63s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+			}
+			@keyframes drift-p {
+				0% {
+					transform: translate(0, 0);
+				}
+				100% {
+					transform: translate(8%, 6%);
+				}
+			}
+			@keyframes drift-b {
+				0% {
+					transform: translate(0, 0);
+				}
+				100% {
+					transform: translate(-7%, 5%);
+				}
+			}
+			@keyframes drift-g {
+				0% {
+					transform: translate(0, 0);
+				}
+				100% {
+					transform: translate(5%, -6%);
+				}
+			}
+
+			#bg-dots {
+				position: absolute;
+				inset: -32px;
+				z-index: 3;
+				background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='1.5' cy='1.5' r='1.5' fill='%23ffffff' opacity='0.04'/%3E%3C/svg%3E");
+				background-size: 32px 32px;
+				will-change: transform;
+				animation: dot-pan 30s linear infinite;
+			}
+			@keyframes dot-pan {
+				from {
+					transform: translate(0, 0);
+				}
+				to {
+					transform: translate(32px, 32px);
+				}
+			}
+
+			#bg-toasts {
+				position: absolute;
+				inset: 0;
+				z-index: 4;
+				overflow: hidden;
+			}
+			.ghost-rise {
+				position: absolute;
+				left: var(--start-x);
+				top: var(--start-y);
+				will-change: transform;
+				animation: rise var(--rise-dur) linear var(--rise-delay) infinite;
+			}
+			.ghost {
+				width: var(--w);
+				height: var(--h);
+				border-radius: 6px;
+				border: 1px solid rgba(var(--c), var(--ba));
+				background: rgba(var(--c), var(--bg-a));
+				will-change: transform, opacity;
+				animation: drift var(--drift-dur) ease-in-out infinite alternate;
+			}
+			@keyframes rise {
+				0% {
+					transform: translateY(0);
+					opacity: 0;
+				}
+				15% {
+					opacity: 0.7;
+				}
+				80% {
+					opacity: 0.7;
+				}
+				100% {
+					transform: translateY(-140vh);
+					opacity: 0;
+				}
+			}
+			@keyframes drift {
+				from {
+					transform: translateX(calc(var(--drift) * -1));
+				}
+				to {
+					transform: translateX(var(--drift));
+				}
+			}
+
+			#bg-vignette {
+				position: absolute;
+				inset: 0;
+				z-index: 5;
+				background: radial-gradient(
+					ellipse at center,
+					transparent 40%,
+					rgba(0, 0, 0, 0.55) 100%
+				);
+			}
+
+			@media (prefers-reduced-motion: reduce) {
+				.aurora,
+				#bg-dots,
+				.ghost-rise,
+				.ghost {
+					animation: none !important;
+				}
+			}
+
+			@media (prefers-color-scheme: light) {
+				:root:not([data-theme="dark"]) #bg-system {
+					display: none;
+				}
+			}
+			[data-theme="light"] #bg-system {
+				display: none;
+			}
+
 			header {
 				padding: 64px 24px 48px;
 				text-align: center;
@@ -493,6 +662,7 @@
 			}
 			.code-tabs {
 				display: flex;
+				flex-wrap: wrap;
 				gap: 4px;
 				margin-bottom: -1px;
 			}
@@ -562,7 +732,6 @@
 				color: var(--muted);
 				margin-top: 4px;
 			}
-			/* ──────── Custom dropdown (ARIA listbox combobox) ──────── */
 			.dd {
 				position: relative;
 				width: 100%;
@@ -800,6 +969,18 @@
 		</style>
 	</head>
 	<body>
+		<div id="bg-system" aria-hidden="true">
+			<div id="bg-noise"></div>
+			<div id="bg-aurora">
+				<div class="aurora aurora-purple"></div>
+				<div class="aurora aurora-blue"></div>
+				<div class="aurora aurora-green"></div>
+			</div>
+			<div id="bg-dots"></div>
+			<div id="bg-toasts"></div>
+			<div id="bg-vignette"></div>
+		</div>
+
 		<button
 			id="theme-toggle"
 			aria-label="Toggle color theme"
@@ -819,7 +1000,7 @@
 			</p>
 			<div class="badges">
 				<span class="badge badge-green">✓ Zero dependencies</span>
-				<span class="badge badge-purple">v3.0.0</span>
+				<span class="badge badge-purple">v3.0.7</span>
 				<span class="badge">MIT License</span>
 				<span class="badge badge-green">WCAG 2.1 AA</span>
 				<span class="badge">TypeScript</span>
@@ -1099,7 +1280,7 @@
 							<li><span class="icon-chk">✓</span> Vite build + Vitest tests</li>
 							<li>
 								<span class="icon-chk">✓</span> Promise API (await
-								toast.onDismissed)
+								toast.dismissed)
 							</li>
 							<li>
 								<span class="icon-chk">✓</span> Escape key + focus management
@@ -1117,72 +1298,347 @@
 				<h2>💻 Code samples <span class="label">Drop-in API</span></h2>
 				<div class="code-tabs">
 					<div class="code-tab active" onclick="showTab(0, this)">
-						Basic usage
+						Bundler (TS)
 					</div>
-					<div class="code-tab" onclick="showTab(1, this)">Promise API</div>
-					<div class="code-tab" onclick="showTab(2, this)">Migration</div>
+					<div class="code-tab" onclick="showTab(1, this)">CDN (HTML)</div>
+					<div class="code-tab" onclick="showTab(2, this)">React</div>
+					<div class="code-tab" onclick="showTab(3, this)">Basic API</div>
+					<div class="code-tab" onclick="showTab(4, this)">Options</div>
+					<div class="code-tab" onclick="showTab(5, this)">Promise API</div>
+					<div class="code-tab" onclick="showTab(6, this)">Migration</div>
 				</div>
+
+				<!-- ─── Tab 0: Bundler (Vite / Webpack / Rollup) ─────────────── -->
 				<div id="tab-0">
-					<pre><span class="cmt">// Install</span>
+					<pre><span class="cmt">// 1. Install</span>
 npm install toastr-next
 
-<span class="cmt">// Import (ESM)</span>
-<span class="kw">import</span> toastr <span class="kw">from</span> <span class="str">'toastr-next'</span>;
-<span class="cmt">// CSS is auto-injected — no import needed!</span>
+<span class="cmt">// 2. src/main.ts — entry file (same code works under Vite, Webpack,</span>
+<span class="cmt">//    Rollup, Parcel, esbuild. No special bundler config needed.)</span>
+<span class="kw">import</span> { toastr } <span class="kw">from</span> <span class="str">'toastr-next'</span>;
+<span class="cmt">// CSS is auto-injected on first import — no `import 'toastr-next/style'`.</span>
 
-<span class="cmt">// Same API as before — no jQuery!</span>
+toastr.options = {
+  positionClass: <span class="str">'toast-top-right'</span>,
+  progressBar: <span class="kw">true</span>,
+  closeButton: <span class="kw">true</span>,
+  timeOut: 4000,
+};
+
+<span class="fn">document</span>.<span class="fn">getElementById</span>(<span class="str">'save'</span>)!.<span class="fn">addEventListener</span>(<span class="str">'click'</span>, <span class="kw">async</span> () =&gt; {
+  <span class="kw">const</span> t = toastr.<span class="fn">info</span>(<span class="str">'Saving…'</span>, <span class="str">''</span>, { timeOut: 0 });
+  <span class="kw">try</span> {
+    <span class="kw">await</span> <span class="fn">saveToServer</span>();
+    t.<span class="fn">clear</span>();
+    <span class="kw">await</span> t.dismissed;
+    toastr.<span class="fn">success</span>(<span class="str">'Saved!'</span>);
+  } <span class="kw">catch</span> {
+    t.<span class="fn">clear</span>();
+    toastr.<span class="fn">error</span>(<span class="str">'Save failed'</span>);
+  }
+});
+
+<span class="cmt">// 3. index.html (Vite-style)</span>
+<span class="cmt">// &lt;button id="save"&gt;Save&lt;/button&gt;</span>
+<span class="cmt">// &lt;script type="module" src="/src/main.ts"&gt;&lt;/script&gt;</span></pre>
+				</div>
+
+				<!-- ─── Tab 1: Plain HTML via CDN (no build step) ───────────── -->
+				<div id="tab-1" style="display: none">
+					<pre><span class="cmt">&lt;!-- One self-contained HTML file. No npm, no bundler, no build. --&gt;</span>
+&lt;!<span class="kw">doctype</span> html&gt;
+&lt;html lang=<span class="str">"en"</span>&gt;
+&lt;head&gt;
+  &lt;meta charset=<span class="str">"utf-8"</span> /&gt;
+  &lt;title&gt;toastr-next CDN demo&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;button id=<span class="str">"ok"</span>&gt;Show success&lt;/button&gt;
+  &lt;button id=<span class="str">"err"</span>&gt;Show error&lt;/button&gt;
+
+  <span class="cmt">&lt;!-- Loads window.toastr and auto-injects CSS --&gt;</span>
+  &lt;script src=<span class="str">"https://cdn.jsdelivr.net/npm/toastr-next@3/dist/toastr-next.iife.js"</span>&gt;&lt;/script&gt;
+  &lt;script&gt;
+    toastr.options = {
+      positionClass: <span class="str">'toast-top-right'</span>,
+      progressBar: <span class="kw">true</span>,
+      closeButton: <span class="kw">true</span>,
+    };
+
+    <span class="fn">document</span>.<span class="fn">getElementById</span>(<span class="str">'ok'</span>).<span class="fn">addEventListener</span>(<span class="str">'click'</span>, () =&gt; {
+      toastr.<span class="fn">success</span>(<span class="str">'Saved!'</span>, <span class="str">'Success'</span>);
+    });
+    <span class="fn">document</span>.<span class="fn">getElementById</span>(<span class="str">'err'</span>).<span class="fn">addEventListener</span>(<span class="str">'click'</span>, () =&gt; {
+      toastr.<span class="fn">error</span>(<span class="str">'Something went wrong'</span>, <span class="str">'Error'</span>);
+    });
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+<span class="cmt">// Pin a version: @3.0.7 for exact, @3 for latest 3.x.</span>
+<span class="cmt">// unpkg also works: https://unpkg.com/toastr-next@3/dist/toastr-next.iife.js</span></pre>
+				</div>
+
+				<!-- ─── Tab 2: React (Vite / Next.js client / Remix / CRA) ──── -->
+				<div id="tab-2" style="display: none">
+					<pre><span class="cmt">// 1. Install — React 17+ is required as a peer dependency</span>
+npm install toastr-next
+
+<span class="cmt">// 2. src/App.tsx — mount the Provider once near the root.</span>
+<span class="cmt">//    &lt;ToastrProvider /&gt; is self-closing and renders null.</span>
+<span class="kw">import</span> { ToastrProvider } <span class="kw">from</span> <span class="str">'toastr-next/react'</span>;
+<span class="kw">import</span> { SaveButton } <span class="kw">from</span> <span class="str">'./SaveButton'</span>;
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">return</span> (
+    &lt;&gt;
+      &lt;ToastrProvider
+        position=<span class="str">"toast-top-right"</span>
+        options={{ progressBar: <span class="kw">true</span>, closeButton: <span class="kw">true</span> }}
+      /&gt;
+      &lt;SaveButton /&gt;
+    &lt;/&gt;
+  );
+}
+
+<span class="cmt">// 3. src/SaveButton.tsx — trigger toasts via the hook</span>
+<span class="kw">import</span> { useToastr } <span class="kw">from</span> <span class="str">'toastr-next/react'</span>;
+
+<span class="kw">export function</span> <span class="fn">SaveButton</span>() {
+  <span class="kw">const</span> toast = <span class="fn">useToastr</span>();
+  <span class="kw">return</span> (
+    &lt;button onClick={<span class="kw">async</span> () =&gt; {
+      <span class="kw">const</span> t = toast.<span class="fn">info</span>(<span class="str">'Saving…'</span>, <span class="str">''</span>, { timeOut: 0 });
+      <span class="kw">await</span> <span class="fn">saveToServer</span>();
+      t.<span class="fn">clear</span>();
+      <span class="kw">await</span> t.dismissed;
+      toast.<span class="fn">success</span>(<span class="str">'Saved!'</span>);
+    }}&gt;Save&lt;/button&gt;
+  );
+}
+
+<span class="cmt">// SSR note: import is safe on the server, but calling toast.*() from a</span>
+<span class="cmt">// server component throws (it uses document.createElement). Trigger</span>
+<span class="cmt">// toasts from client components / "use client" boundaries only.</span></pre>
+				</div>
+
+				<!-- ─── Tab 3: Basic API surface ─────────────────────────────── -->
+				<div id="tab-3" style="display: none">
+					<pre><span class="cmt">// Four notification types — (message, title?, options?)</span>
 toastr.<span class="fn">success</span>(<span class="str">'Saved!'</span>);
 toastr.<span class="fn">error</span>(<span class="str">'Failed'</span>, <span class="str">'Oops'</span>);
 toastr.<span class="fn">info</span>(<span class="str">'New update'</span>);
 toastr.<span class="fn">warning</span>(<span class="str">'Low disk space'</span>, <span class="str">'Warning'</span>);
 
-<span class="cmt">// Global options</span>
+<span class="cmt">// Global defaults — assigning REPLACES the whole object (not merged)</span>
 toastr.options = {
   positionClass: <span class="str">'toast-bottom-right'</span>,
   animation: <span class="str">'bounce'</span>,
   progressBar: <span class="kw">true</span>,
   closeButton: <span class="kw">true</span>,
-};</pre>
+};
+
+<span class="cmt">// Per-call options override globals</span>
+toastr.<span class="fn">success</span>(<span class="str">'Done!'</span>, <span class="str">''</span>, { animation: <span class="str">'flip'</span>, timeOut: 3000 });
+
+<span class="cmt">// Sticky toast — timeOut + extendedTimeOut both 0</span>
+toastr.<span class="fn">warning</span>(<span class="str">'Confirm to proceed'</span>, <span class="str">'Action required'</span>, {
+  timeOut: 0,
+  extendedTimeOut: 0,
+  closeButton: <span class="kw">true</span>,
+});
+
+<span class="cmt">// Dismiss all toasts</span>
+toastr.<span class="fn">clear</span>();  <span class="cmt">// animate out</span>
+toastr.<span class="fn">remove</span>(); <span class="cmt">// remove immediately</span></pre>
 				</div>
-				<div id="tab-1" style="display: none">
-					<pre><span class="cmt">// Returns a response object with a Promise</span>
+
+				<!-- ─── Tab 4: Options reference (all 18) ───────────────────── -->
+				<div id="tab-4" style="display: none">
+					<pre><span class="cmt">// Every option below is optional. Defaults shown.</span>
+<span class="cmt">// Set on toastr.options globally, or pass per-call as the 3rd arg.</span>
+
+toastr.options = {
+  <span class="cmt">// ─── Timing ──────────────────────────────────────────────</span>
+  timeOut: 5000,                 <span class="cmt">// ms before auto-dismiss; 0 = sticky</span>
+  extendedTimeOut: 1000,         <span class="cmt">// ms to keep open after the pointer leaves</span>
+
+  <span class="cmt">// ─── Position &amp; layout ──────────────────────────────────</span>
+  positionClass: <span class="str">'toast-top-right'</span>, <span class="cmt">// see list at bottom</span>
+  newestOnTop: <span class="kw">true</span>,             <span class="cmt">// stack newest on top of the pile</span>
+  target: <span class="str">'body'</span>,                <span class="cmt">// CSS selector for the container parent</span>
+  rtl: <span class="kw">false</span>,                    <span class="cmt">// right-to-left layout (icon flips to right)</span>
+
+  <span class="cmt">// ─── Animation ───────────────────────────────────────────</span>
+  animation: <span class="str">'fade'</span>,             <span class="cmt">// 'fade' | 'slide' | 'bounce' | 'flip'</span>
+
+  <span class="cmt">// ─── Interaction ─────────────────────────────────────────</span>
+  tapToDismiss: <span class="kw">true</span>,            <span class="cmt">// click the toast body to dismiss</span>
+  closeOnHover: <span class="kw">true</span>,            <span class="cmt">// pause the countdown while hovering</span>
+  closeButton: <span class="kw">false</span>,            <span class="cmt">// show the × close button</span>
+  closeHtml: <span class="str">'&lt;button type="button" aria-label="Close notification"&gt;×&lt;/button&gt;'</span>,
+
+  <span class="cmt">// ─── Visual ──────────────────────────────────────────────</span>
+  progressBar: <span class="kw">false</span>,            <span class="cmt">// show countdown progress bar at the bottom</span>
+
+  <span class="cmt">// ─── Behavior ────────────────────────────────────────────</span>
+  preventDuplicates: <span class="kw">false</span>,      <span class="cmt">// suppress identical messages already on screen</span>
+  allowHtml: <span class="kw">false</span>,              <span class="cmt">// render HTML in message/title (escaped by default — XSS-safe)</span>
+
+  <span class="cmt">// ─── Lifecycle callbacks (all optional) ──────────────────</span>
+  onShown: () =&gt; {},             <span class="cmt">// fired after the enter animation completes</span>
+  onHidden: () =&gt; {},            <span class="cmt">// fired after the hide animation completes</span>
+  onclick: (e) =&gt; {},            <span class="cmt">// fired when the toast body is clicked</span>
+  onCloseClick: (e) =&gt; {},       <span class="cmt">// fired when the × button is clicked</span>
+};
+
+<span class="cmt">// ─── All eight position classes ────────────────────────────</span>
+<span class="cmt">// 'toast-top-right'    'toast-top-left'    'toast-top-center'    'toast-top-full-width'</span>
+<span class="cmt">// 'toast-bottom-right' 'toast-bottom-left' 'toast-bottom-center' 'toast-bottom-full-width'</span>
+
+<span class="cmt">// ─── Per-call override (only this toast gets the override) ─</span>
+toastr.<span class="fn">success</span>(<span class="str">'Done!'</span>, <span class="str">'Saved'</span>, {
+  animation: <span class="str">'bounce'</span>,
+  positionClass: <span class="str">'toast-bottom-right'</span>,
+  timeOut: 3000,
+  onclick: (e) =&gt; <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'clicked'</span>, e),
+});
+
+<span class="cmt">// ─── Mutate a single key (does not replace the whole object) ─</span>
+toastr.options.timeOut = 3000;</pre>
+				</div>
+
+				<!-- ─── Tab 5: Promise API + subscribe ──────────────────────── -->
+				<div id="tab-5" style="display: none">
+					<pre><span class="cmt">// Every toastr.*() call returns a ToastInstance synchronously</span>
 <span class="kw">const</span> toast = toastr.<span class="fn">success</span>(<span class="str">'Changes saved!'</span>);
 
-<span class="cmt">// Resolves when dismissed</span>
-<span class="kw">await</span> toast.onDismissed;
+<span class="cmt">// dismissed resolves after the hide animation finishes</span>
+<span class="kw">await</span> toast.dismissed;
 window.location.<span class="fn">assign</span>(<span class="str">'/dashboard'</span>);
 
-<span class="cmt">// Chain multiple toasts sequentially</span>
-<span class="kw">async function</span> <span class="fn">multiStep</span>() {
-  <span class="kw">await</span> toastr.<span class="fn">info</span>(<span class="str">'Step 1: Validating...'</span>).onDismissed;
-  <span class="kw">await</span> toastr.<span class="fn">info</span>(<span class="str">'Step 2: Uploading...'</span>).onDismissed;
-  toastr.<span class="fn">success</span>(<span class="str">'All done!'</span>);
-}</pre>
+<span class="cmt">// Programmatic dismissal during async work</span>
+<span class="kw">const</span> t = toastr.<span class="fn">info</span>(<span class="str">'Uploading…'</span>, <span class="str">''</span>, { timeOut: 0, closeButton: <span class="kw">true</span> });
+<span class="kw">await</span> <span class="fn">uploadFile</span>();
+t.<span class="fn">clear</span>();         <span class="cmt">// trigger dismiss animation</span>
+<span class="kw">await</span> t.dismissed; <span class="cmt">// wait until it's fully gone</span>
+toastr.<span class="fn">success</span>(<span class="str">'Upload complete!'</span>);
+
+<span class="cmt">// Subscribe to all lifecycle events; returns an unsubscribe fn</span>
+<span class="kw">const</span> unsub = toastr.<span class="fn">subscribe</span>((e) =&gt; {
+  <span class="cmt">// e.state: "shown" | "hidden" | "clicked"</span>
+  <span class="cmt">// e.type:  "success" | "error" | "info" | "warning"</span>
+  <span class="fn">console</span>.<span class="fn">log</span>(e.type, e.state, e.message);
+});
+<span class="fn">unsub</span>();</pre>
 				</div>
-				<div id="tab-2" style="display: none">
-					<pre><span class="cmt">// OLD (toastr v2 — jQuery required)</span>
-<span class="cmt">// &lt;script src="jquery.min.js"&gt;&lt;/script&gt;  ← 30 KB</span>
-<span class="cmt">// &lt;script src="toastr.min.js"&gt;&lt;/script&gt;  ← 5 KB</span>
-<span class="cmt">// Total: ~87 KB just to show a toast</span>
 
-<span class="cmt">// NEW (toastr-next v3 — zero deps)</span>
-<span class="cmt">// &lt;link rel="stylesheet" href="toastr.css"&gt;</span>
-<span class="cmt">// &lt;script src="toastr.js"&gt;&lt;/script&gt;</span>
-<span class="cmt">// Total: ~4 KB gzipped (JS + CSS)</span>
+				<!-- ─── Tab 6: Full migration from toastr 2.x ──────────────── -->
+				<div id="tab-6" style="display: none">
+					<pre><span class="cmt">// ═══════════════════════════════════════════════════════════</span>
+<span class="cmt">// MIGRATION GUIDE — toastr 2.x → toastr-next 3.x</span>
+<span class="cmt">// Seven concrete steps. Most apps need only steps 1–3.</span>
+<span class="cmt">// ═══════════════════════════════════════════════════════════</span>
 
-<span class="cmt">// API is identical — just remove jQuery</span>
-toastr.<span class="fn">success</span>(<span class="str">'Hello!'</span>);  <span class="cmt">// works the same</span>
 
-<span class="cmt">// New options</span>
-toastr.options.animation = <span class="str">'bounce'</span>;   <span class="cmt">// NEW</span>
-<span class="kw">await</span> toastr.<span class="fn">info</span>(<span class="str">'Hi'</span>).onDismissed; <span class="cmt">// NEW</span></pre>
+<span class="cmt">// ─── 1. Remove jQuery ─────────────────────────────────────</span>
+<span class="cmt">// OLD</span>
+<span class="cmt">//   &lt;script src="jquery.min.js"&gt;&lt;/script&gt;</span>
+<span class="cmt">//   &lt;script src="toastr.min.js"&gt;&lt;/script&gt;</span>
+<span class="cmt">// NEW — zero runtime deps</span>
+npm uninstall jquery toastr
+npm install toastr-next
+
+
+<span class="cmt">// ─── 2. Update imports ────────────────────────────────────</span>
+<span class="cmt">// OLD</span>
+<span class="cmt">//   import toastr from 'toastr';</span>
+<span class="cmt">//   import 'toastr/build/toastr.min.css';</span>
+<span class="cmt">// NEW — CSS is auto-injected on first import</span>
+<span class="kw">import</span> { toastr } <span class="kw">from</span> <span class="str">'toastr-next'</span>;
+
+
+<span class="cmt">// ─── 3. Replace animation options ─────────────────────────</span>
+<span class="cmt">// OLD — six jQuery-easing options</span>
+<span class="cmt">//   toastr.options.showMethod  = 'slideDown';</span>
+<span class="cmt">//   toastr.options.hideMethod  = 'slideUp';</span>
+<span class="cmt">//   toastr.options.showEasing  = 'easeOutBounce';</span>
+<span class="cmt">//   toastr.options.hideEasing  = 'easeInBack';</span>
+<span class="cmt">// NEW — one option, four CSS presets</span>
+toastr.options.animation = <span class="str">'slide'</span>; <span class="cmt">// 'fade' | 'slide' | 'bounce' | 'flip'</span>
+
+<span class="cmt">// REMOVED entirely (no replacement needed — handled by the presets):</span>
+<span class="cmt">//   showMethod, hideMethod, closeMethod, showEasing, hideEasing, closeEasing</span>
+
+
+<span class="cmt">// ─── 4. Update the subscribe() callback ───────────────────</span>
+<span class="cmt">// OLD — returned void</span>
+<span class="cmt">//   toastr.subscribe(callback);</span>
+<span class="cmt">// NEW — returns an unsubscribe function</span>
+<span class="kw">const</span> unsubscribe = toastr.<span class="fn">subscribe</span>(callback);
+<span class="cmt">// later…</span>
+<span class="fn">unsubscribe</span>();
+
+
+<span class="cmt">// ─── 5. Handle the new return type ────────────────────────</span>
+<span class="cmt">// OLD — returned a jQuery object</span>
+<span class="cmt">//   const $toast = toastr.success('Saved!');</span>
+<span class="cmt">//   $toast.css('color', 'red');</span>
+<span class="cmt">// NEW — returns a typed ToastInstance</span>
+<span class="kw">const</span> instance = toastr.<span class="fn">success</span>(<span class="str">'Saved!'</span>);
+<span class="kw">await</span> instance.dismissed; <span class="cmt">// resolves when the toast is gone</span>
+instance.<span class="fn">clear</span>();         <span class="cmt">// trigger dismiss animation</span>
+instance.<span class="fn">remove</span>();        <span class="cmt">// remove immediately, no animation</span>
+
+
+<span class="cmt">// ─── 6. New — instance.dismissed Promise ──────────────────</span>
+<span class="kw">const</span> t = toastr.<span class="fn">warning</span>(<span class="str">'Are you sure?'</span>, <span class="str">''</span>, {
+  timeOut: 0,
+  closeButton: <span class="kw">true</span>,
+});
+<span class="kw">await</span> t.dismissed;
+<span class="fn">proceed</span>();
+
+
+<span class="cmt">// ─── 7. Replace escapeHtml with allowHtml ─────────────────</span>
+<span class="cmt">// HTML is now ESCAPED BY DEFAULT (secure). To opt in, pass allowHtml.</span>
+<span class="cmt">// OLD — escaping was off by default, escapeHtml turned it on</span>
+<span class="cmt">//   toastr.success('&lt;b&gt;Bold&lt;/b&gt;', '', { escapeHtml: false });</span>
+<span class="cmt">// NEW — explicit opt-in</span>
+toastr.<span class="fn">success</span>(<span class="str">'&lt;b&gt;Bold&lt;/b&gt;'</span>, <span class="str">''</span>, { allowHtml: <span class="kw">true</span> });
+
+
+<span class="cmt">// ═══════════════════════════════════════════════════════════</span>
+<span class="cmt">// Cheatsheet — preserved vs changed vs removed</span>
+<span class="cmt">// ═══════════════════════════════════════════════════════════</span>
+<span class="cmt">// PRESERVED  toastr.{success,error,info,warning}(msg, title?, opts?)</span>
+<span class="cmt">//            toastr.options, toastr.clear(), toastr.remove(),</span>
+<span class="cmt">//            positionClass, timeOut, extendedTimeOut, closeButton,</span>
+<span class="cmt">//            progressBar, newestOnTop, preventDuplicates, tapToDismiss,</span>
+<span class="cmt">//            closeOnHover, rtl, target, closeHtml,</span>
+<span class="cmt">//            onShown, onHidden, onclick, onCloseClick</span>
+<span class="cmt">//</span>
+<span class="cmt">// CHANGED    subscribe(cb)            → now returns unsubscribe fn</span>
+<span class="cmt">//            success(...) → ToastInstance (was jQuery object)</span>
+<span class="cmt">//            escapeHtml: false        → allowHtml: true  (inverted)</span>
+<span class="cmt">//</span>
+<span class="cmt">// REMOVED    showMethod, hideMethod, closeMethod</span>
+<span class="cmt">//            showEasing, hideEasing, closeEasing</span>
+<span class="cmt">//            (use `animation` preset instead)</span>
+<span class="cmt">//</span>
+<span class="cmt">// NEW        animation: 'fade'|'slide'|'bounce'|'flip'</span>
+<span class="cmt">//            instance.dismissed Promise</span>
+<span class="cmt">//            instance.clear() / instance.remove()</span>
+<span class="cmt">//            allowHtml (escaped-by-default content)</span>
+<span class="cmt">//            React adapter: import { ToastrProvider, useToastr }</span>
+<span class="cmt">//                           from 'toastr-next/react'</span></pre>
 				</div>
 			</section>
 		</main>
 
 		<footer>
 			<p>
-				<strong>toastr-next v3.0.0</strong> — A revival of
+				<strong>toastr-next v3.0.7</strong> — A revival of
 				<a
 					href="https://github.com/CodeSeven/toastr"
 					target="_blank"
@@ -1524,9 +1980,9 @@ toastr.options.animation = <span class="str">'bounce'</span>;   <span class="cmt
 				toastr.options = { timeOut: 3000, progressBar: true };
 				var t = toastr.info("Waiting for you to dismiss...", "Promise API");
 				bump();
-				await t.onDismissed;
+				await t.dismissed;
 				toastr.options = { timeOut: 4000, progressBar: true };
-				toastr.success("Promise resolved after dismiss!", "onDismissed ✓");
+				toastr.success("Promise resolved after dismiss!", "dismissed ✓");
 				bump();
 			}
 			function fireStack() {
@@ -1583,10 +2039,13 @@ toastr.options.animation = <span class="str">'bounce'</span>;   <span class="cmt
 				bump();
 			}
 			function showTab(idx, el) {
-				[0, 1, 2].forEach(function (i) {
+				// Iterate every tab-N panel present in the DOM — works for any
+				// number of tabs without needing to hardcode the count.
+				for (var i = 0; ; i++) {
 					var e = document.getElementById("tab-" + i);
-					if (e) e.style.display = i === idx ? "" : "none";
-				});
+					if (!e) break;
+					e.style.display = i === idx ? "" : "none";
+				}
 				document.querySelectorAll(".code-tab").forEach(function (t) {
 					t.classList.remove("active");
 				});
@@ -1618,7 +2077,7 @@ toastr.options.animation = <span class="str">'bounce'</span>;   <span class="cmt
 					};
 					toastr.success(
 						"No jQuery. No bloat. Just toasts. 🍞",
-						"toastr-next v3.0.0",
+						"toastr-next v3.0.7",
 					);
 					bump();
 				}, 600);
@@ -1657,6 +2116,93 @@ toastr.options.animation = <span class="str">'bounce'</span>;   <span class="cmt
 
 			// Restore saved theme on load (default: dark)
 			applyTheme(localStorage.getItem("toastr-theme") || "dark");
+		</script>
+
+		<!-- ═══════════════════════════════════════════════════════════
+		     Toast Storm — ghost-toast generator. 24 randomised drifters,
+		     self-contained IIFE, under 60 lines. Skips entirely when
+		     prefers-reduced-motion is set. Toasts persist across the
+		     theme toggle (CSS hides #bg-system in light mode).
+		     ═══════════════════════════════════════════════════════════ -->
+		<script>
+			(function () {
+				if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+				var container = document.getElementById("bg-toasts");
+				if (!container) return;
+
+				// Brand palette — "r,g,b" tuples for use in rgba()
+				var COLORS = [
+					"34,197,94", // success green
+					"239,68,68", // error red
+					"59,130,246", // info blue
+					"245,158,11", // warning amber
+					"124,58,237", // signature purple
+				];
+				var rand = function (a, b) {
+					return Math.random() * (b - a) + a;
+				};
+				var pick = function (a) {
+					return a[Math.floor(Math.random() * a.length)];
+				};
+
+				for (var i = 0; i < 24; i++) {
+					var w = Math.round(rand(140, 260));
+					var h = Math.round(rand(36, 52));
+					var sx = rand(-5, 100).toFixed(1);
+					var sy = Math.round(rand(100, 120));
+					var rDur = rand(15, 40).toFixed(1);
+					var rDel = rand(0, 25).toFixed(1);
+					var dDur = rand(6, 14).toFixed(1);
+					var drift = Math.round(rand(20, 60));
+					var c = pick(COLORS);
+					var ba = rand(0.12, 0.18).toFixed(3);
+					var bgA = rand(0.03, 0.05).toFixed(3);
+
+					var rise = document.createElement("div");
+					rise.className = "ghost-rise";
+					rise.style.cssText =
+						"--start-x:" +
+						sx +
+						"vw;" +
+						"--start-y:" +
+						sy +
+						"vh;" +
+						"--rise-dur:" +
+						rDur +
+						"s;" +
+						"--rise-delay:" +
+						rDel +
+						"s";
+
+					var ghost = document.createElement("div");
+					ghost.className = "ghost";
+					ghost.style.cssText =
+						"--w:" +
+						w +
+						"px;" +
+						"--h:" +
+						h +
+						"px;" +
+						"--c:" +
+						c +
+						";" +
+						"--ba:" +
+						ba +
+						";" +
+						"--bg-a:" +
+						bgA +
+						";" +
+						"--drift:" +
+						drift +
+						"px;" +
+						"--drift-dur:" +
+						dDur +
+						"s";
+
+					rise.appendChild(ghost);
+					container.appendChild(rise);
+				}
+			})();
 		</script>
 	</body>
 </html>

@@ -1,6 +1,6 @@
 {
   "name": "toastr-next",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "description": "Zero-dependency toast notifications. TypeScript rewrite of toastr 2.x — CSS animations, dark mode, Promise API, fully accessible.",
   "type": "module",
   "main": "./dist/toastr-next.cjs.js",
@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc --emitDeclarationOnly && vite build && vite build --config vite.config.react.ts",
+    "build": "tsc --emitDeclarationOnly && vite build && vite build --config vite.config.iife.ts && vite build --config vite.config.react.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
